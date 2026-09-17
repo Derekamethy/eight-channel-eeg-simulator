@@ -10,7 +10,7 @@ A desktop engineering proof of concept for **eight-channel EEG waveform generati
 
 ![Eight-channel EEG simulator desktop interface](assets/eeg_simulator_demo.png)
 
-## What this project demonstrates
+## Overview
 
 The prototype models the desktop and verification side of an EEG-simulator workflow. It can generate or load eight-channel EEG-like waveforms, configure channel conditions, map target amplitudes to virtual 16-bit DAC codes, exercise a hardware-independent device interface, and run deterministic software-reference checks.
 
@@ -106,6 +106,10 @@ scripts/check_release.py         Public-release consistency checks
 data/synthetic_eeg_demo.npz      Synthetic demonstration dataset
 assets/eeg_simulator_demo.png    Application screenshot
 DESIGN_DECISIONS.md              Engineering rationale
+.github/workflows/ci.yml         Cross-platform release checks and GUI smoke test
+pyproject.toml                   Package metadata and dependencies
+requirements.txt                 Direct runtime dependency list
+README.md / LICENSE / NOTICE.md  Public documentation and licensing
 ```
 
 ## Quick start
@@ -132,7 +136,7 @@ The main GUI can also run a short automated smoke scenario:
 python app.py --smoke-test
 ```
 
-## Tests and reproducibility
+## Reproducibility
 
 Run the maintained checks with:
 
