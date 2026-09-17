@@ -1,0 +1,25 @@
+# Python environments and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# IDE / OS state
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+.ipynb_checkpoints/
+
+# Generated local artefacts
+outputs/
+*.log
+
+# Optional external EEG data are not redistributed
+*.edf
+
+# Temporary release tooling
+release_patch.py
