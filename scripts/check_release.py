@@ -58,14 +58,21 @@ if '"synthetic": true' not in metadata_text.lower():
     fail("demo dataset is not explicitly marked synthetic")
 
 ignored = subprocess.run(
-    ["git", "check-ignore", ".venv"], cwd=ROOT,
-    capture_output=True, text=True, check=False,
+    ["git", "check-ignore", "-q", "--no-index", ".venv/release-check-marker"],
+    cwd=ROOT,
+    capture_output=True,
+    text=True,
+    check=False,
 )
 if ignored.returncode != 0:
-    fail(".venv is not ignored by Git")
+    fail(".venv/ is not covered by .gitignore")
 
 tracked = subprocess.run(
-    ["git", "ls-files"], cwd=ROOT, capture_output=True, text=True, check=True
+    ["git", "ls-files"],
+    cwd=ROOT,
+    capture_output=True,
+    text=True,
+    check=True,
 ).stdout.splitlines()
 if any("__pycache__" in item or item.endswith(".pyc") for item in tracked):
     fail("Python cache files are tracked")
