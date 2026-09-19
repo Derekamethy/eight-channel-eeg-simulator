@@ -4,7 +4,7 @@ A desktop and browser engineering proof of concept for **eight-channel EEG wavef
 
 [![CI](https://github.com/Derekamethy/eight-channel-eeg-simulator/actions/workflows/ci.yml/badge.svg)](https://github.com/Derekamethy/eight-channel-eeg-simulator/actions/workflows/ci.yml)
 
-[Browser demo source](web_demo/) · [Desktop source code](eeg_simulator/) · [Design decisions](DESIGN_DECISIONS.md) · [Synthetic demo data](data/synthetic_eeg_demo.npz)
+[▶ Live interactive demo](https://eight-channel-eeg-simulator-derek.streamlit.app/) · [Browser demo source](web_demo/) · [Desktop source code](eeg_simulator/) · [Design decisions](DESIGN_DECISIONS.md) · [Synthetic demo data](data/synthetic_eeg_demo.npz)
 
 **Yangdeyi Yang · Electrical and Electronic Engineering · University College Cork**
 
