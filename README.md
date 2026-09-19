@@ -4,7 +4,7 @@ A desktop engineering proof of concept for **eight-channel EEG waveform generati
 
 [![CI](https://github.com/Derekamethy/eight-channel-eeg-simulator/actions/workflows/ci.yml/badge.svg)](https://github.com/Derekamethy/eight-channel-eeg-simulator/actions/workflows/ci.yml)
 
-[Source code](eeg_simulator/) · [Design decisions](DESIGN_DECISIONS.md) · [Synthetic demo data](data/synthetic_eeg_demo.npz)
+[Browser demo source](web_demo/) · [Desktop source code](eeg_simulator/) · [Design decisions](DESIGN_DECISIONS.md) · [Synthetic demo data](data/synthetic_eeg_demo.npz)
 
 **Yangdeyi Yang · Electrical and Electronic Engineering · University College Cork**
 
@@ -16,11 +16,34 @@ The prototype models the desktop and verification side of an EEG-simulator workf
 
 The implementation deliberately stops at the software/hardware boundary. MCU firmware, physical DAC output, analogue attenuation, electrode-interface hardware, and acquisition-device measurements are not claimed as implemented.
 
+## Interactive browser demo
+
+The repository now includes a **Streamlit browser front end** in `web_demo/`. It reuses the maintained Python signal generator, contact/interference model, virtual-DAC mapping and `MockSimulatorDevice` rather than reimplementing the engineering logic in JavaScript.
+
+The browser demo lets a reviewer:
+
+- select any subset of the eight EEG channels;
+- adjust the maintained 0.25× / 0.5× / 1× / 2× amplitude scale;
+- inject one channel-level contact condition plus optional 50/60 Hz interference;
+- inspect an arbitrary sample and its corresponding 16-bit virtual DAC code;
+- execute the repository's mock connect/configure/upload/start/pause/stop device sequence and inspect the protocol log;
+- see the software/hardware system boundary without implying that physical MCU/DAC hardware is present.
+
+Run it locally from the repository root:
+
+```bash
+python -m pip install -r web_demo/requirements.txt
+streamlit run web_demo/app.py
+```
+
+For Streamlit Community Cloud, use `web_demo/app.py` as the app entry point. The dedicated `web_demo/requirements.txt` keeps the hosted demo independent of the desktop Qt dependency stack.
+
 ## Key capabilities
 
 | Capability | Implemented behaviour |
 | --- | --- |
 | EEG source | Deterministic 8-channel synthetic waveform or NPZ/optional EDF input |
+| Browser demo | Streamlit waveform controls, sample/DAC inspector and mock-device sequence |
 | Default demo | 60 s at 256 Hz, 15,360 samples per channel |
 | Channels | F3, F4, C3, C4, T3, T4, O1, O2 |
 | Playback | Start, pause, stop, loop and monotonic-clock sample tracking |
@@ -29,7 +52,7 @@ The implementation deliberately stops at the software/hardware boundary. MCU fir
 | Fault scenarios | Normal, moderate/high/very-high impedance, lead-off, 50/60 Hz interference |
 | Device layer | Mock device plus serial-adapter skeleton behind one interface |
 | Verification | Simulator-output, acquisition and event-timing checks |
-| Automated tests | 23 unit tests across waveform, DAC, protocol, faults and validation |
+| Automated tests | 27 unit tests across waveform, DAC, protocol, faults, validation and browser-demo logic |
 
 ## Signal path and system boundary
 
@@ -92,6 +115,10 @@ The default software-reference scenario passes all three levels. Thresholds and 
 
 ```text
 app.py                           Desktop application entry point
+web_demo/
+  app.py                         Streamlit browser-demo entry point
+  demo_logic.py                  Shared browser-demo signal preparation
+  requirements.txt               Hosted-demo dependency set
 eeg_simulator/
   eeg_data.py                    EEG model, NPZ and optional EDF I/O
   synthetic_eeg.py               Deterministic 8-channel generator
@@ -136,6 +163,13 @@ The main GUI can also run a short automated smoke scenario:
 python app.py --smoke-test
 ```
 
+Run the browser demo separately:
+
+```bash
+python -m pip install -r web_demo/requirements.txt
+streamlit run web_demo/app.py
+```
+
 ## Reproducibility
 
 Run the maintained checks with:
@@ -145,7 +179,7 @@ python -m unittest discover -s tests -v
 python scripts/check_release.py
 ```
 
-The unit tests cover deterministic generation, NPZ round trips, amplitude scaling, virtual-DAC clipping and monotonicity, protocol encode/decode, device state transitions, fault isolation, mains injection and three-level validation. CI also compiles the source tree and runs the offscreen GUI smoke test.
+The unit tests cover deterministic generation, NPZ round trips, amplitude scaling, virtual-DAC clipping and monotonicity, protocol encode/decode, device state transitions, fault isolation, mains injection, three-level validation and browser-demo signal preparation. CI also compiles the source tree and runs the offscreen GUI smoke test.
 
 The synthetic generator, mock measurement path and mock acquisition path all use fixed seeds. This makes software behaviour repeatable across runs, although GUI rendering and floating-point details can vary slightly across platforms and dependency versions.
 
