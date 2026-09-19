@@ -6,7 +6,7 @@ import numpy as np
 
 from eeg_simulator.dac_model import VirtualDAC
 from eeg_simulator.fault_conditions import ContactState, InterferenceMode
-from web_demo.demo_logic import build_demo_waveform, time_to_sample_index
+from web_demo.demo_logic import build_demo_waveform, format_time, time_to_sample_index
 
 
 class WebDemoLogicTests(unittest.TestCase):
@@ -36,10 +36,36 @@ class WebDemoLogicTests(unittest.TestCase):
         self.assertFalse(np.array_equal(changed.samples_uv[0], baseline.samples_uv[0]))
         np.testing.assert_array_equal(changed.samples_uv[1:], baseline.samples_uv[1:])
 
+    def test_multiple_channel_conditions_apply_independently(self) -> None:
+        baseline = build_demo_waveform()
+        changed = build_demo_waveform(
+            contact_states={
+                "F3": ContactState.HIGH,
+                "T4": ContactState.LEAD_OFF,
+            }
+        )
+        f3 = changed.channel_names.index("F3")
+        t4 = changed.channel_names.index("T4")
+        self.assertFalse(np.array_equal(changed.samples_uv[f3], baseline.samples_uv[f3]))
+        self.assertFalse(np.array_equal(changed.samples_uv[t4], baseline.samples_uv[t4]))
+        for index, channel in enumerate(changed.channel_names):
+            if channel not in {"F3", "T4"}:
+                np.testing.assert_array_equal(
+                    changed.samples_uv[index], baseline.samples_uv[index]
+                )
+
+    def test_unknown_condition_channel_is_rejected(self) -> None:
+        with self.assertRaises(ValueError):
+            build_demo_waveform(contact_states={"BAD": ContactState.HIGH})
+
     def test_time_to_sample_index_clamps_bounds(self) -> None:
         self.assertEqual(time_to_sample_index(-1.0, 256.0, 100), 0)
         self.assertEqual(time_to_sample_index(0.1, 256.0, 100), 26)
         self.assertEqual(time_to_sample_index(99.0, 256.0, 100), 99)
+
+    def test_format_time_matches_console_clock(self) -> None:
+        self.assertEqual(format_time(0.0), "00:00.000")
+        self.assertEqual(format_time(61.125), "01:01.125")
 
 
 if __name__ == "__main__":

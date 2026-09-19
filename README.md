@@ -1,6 +1,6 @@
 # Eight-Channel EEG Simulator and Verification POC
 
-A desktop engineering proof of concept for **eight-channel EEG waveform generation, playback, fault injection, virtual DAC mapping, device-protocol abstraction, and multi-level verification**.
+A desktop and browser engineering proof of concept for **eight-channel EEG waveform generation, playback, fault injection, virtual DAC mapping, device-protocol abstraction, and multi-level verification**.
 
 [![CI](https://github.com/Derekamethy/eight-channel-eeg-simulator/actions/workflows/ci.yml/badge.svg)](https://github.com/Derekamethy/eight-channel-eeg-simulator/actions/workflows/ci.yml)
 
@@ -18,16 +18,17 @@ The implementation deliberately stops at the software/hardware boundary. MCU fir
 
 ## Interactive browser demo
 
-The repository now includes a **Streamlit browser front end** in `web_demo/`. It reuses the maintained Python signal generator, contact/interference model, virtual-DAC mapping and `MockSimulatorDevice` rather than reimplementing the engineering logic in JavaScript.
+The Streamlit front end in `web_demo/` is designed as a browser version of the desktop engineering console rather than as a generic data-analysis page. It reuses the maintained signal generator, per-channel condition model, `PlaybackClock`, virtual-DAC mapping, `MockSimulatorDevice` and validation suite.
 
-The browser demo lets a reviewer:
+The browser console provides:
 
-- select any subset of the eight EEG channels;
-- adjust the maintained 0.25× / 0.5× / 1× / 2× amplitude scale;
-- inject one channel-level contact condition plus optional 50/60 Hz interference;
-- inspect an arbitrary sample and its corresponding 16-bit virtual DAC code;
-- execute the repository's mock connect/configure/upload/start/pause/stop device sequence and inspect the protocol log;
-- see the software/hardware system boundary without implying that physical MCU/DAC hardware is present.
+- explicit **Connect / Disconnect** device state and **Start / Pause / Stop / Reset** playback controls;
+- automatic playback position driven by the maintained monotonic `PlaybackClock`, with the waveform cursor and DAC table updating during playback;
+- a compact fixed **eight-lane EEG monitor** with the 20–30 s synthetic event shaded directly on the traces;
+- independent Normal / Moderate / High Z / Very High Z / Lead Off conditions for all eight channels plus global 50/60 Hz interference;
+- simultaneous eight-channel **target µV → 16-bit virtual DAC code** inspection at the current playback position;
+- a persistent communication log showing the same mock command flow used by the desktop application;
+- the three-level deterministic software-reference validation and an explicit implemented / partial / future / external system boundary.
 
 Run it locally from the repository root:
 
@@ -36,14 +37,14 @@ python -m pip install -r web_demo/requirements.txt
 streamlit run web_demo/app.py
 ```
 
-For Streamlit Community Cloud, use `web_demo/app.py` as the app entry point. The dedicated `web_demo/requirements.txt` keeps the hosted demo independent of the desktop Qt dependency stack.
+For Streamlit Community Cloud, use `web_demo/app.py` as the app entry point. The hosted console intentionally does not claim MCU firmware, physical DAC output, analogue attenuation or hardware-in-the-loop measurements.
 
 ## Key capabilities
 
 | Capability | Implemented behaviour |
 | --- | --- |
 | EEG source | Deterministic 8-channel synthetic waveform or NPZ/optional EDF input |
-| Browser demo | Streamlit waveform controls, sample/DAC inspector and mock-device sequence |
+| Browser demo | Desktop-console-style live playback, eight-lane monitor, DAC table and protocol log |
 | Default demo | 60 s at 256 Hz, 15,360 samples per channel |
 | Channels | F3, F4, C3, C4, T3, T4, O1, O2 |
 | Playback | Start, pause, stop, loop and monotonic-clock sample tracking |
@@ -52,7 +53,7 @@ For Streamlit Community Cloud, use `web_demo/app.py` as the app entry point. The
 | Fault scenarios | Normal, moderate/high/very-high impedance, lead-off, 50/60 Hz interference |
 | Device layer | Mock device plus serial-adapter skeleton behind one interface |
 | Verification | Simulator-output, acquisition and event-timing checks |
-| Automated tests | 29 unit tests across waveform, DAC, protocol, faults, validation and browser-demo logic |
+| Automated tests | 41 tests across waveform, DAC, protocol, faults, validation, web controller, visualization and app execution |
 
 ## Signal path and system boundary
 
@@ -116,8 +117,10 @@ The default software-reference scenario passes all three levels. Thresholds and 
 ```text
 app.py                           Desktop application entry point
 web_demo/
-  app.py                         Streamlit browser-demo entry point
-  demo_logic.py                  Shared browser-demo signal preparation
+  app.py                         Desktop-console-style Streamlit entry point
+  controller.py                  Persistent device/playback state controller
+  demo_logic.py                  Shared signal and DAC preparation
+  visualization.py               Fixed eight-lane Plotly monitor rendering
   requirements.txt               Hosted-demo dependency set
 eeg_simulator/
   eeg_data.py                    EEG model, NPZ and optional EDF I/O
@@ -179,7 +182,7 @@ python -m unittest discover -s tests -v
 python scripts/check_release.py
 ```
 
-The unit tests cover deterministic generation, NPZ round trips, amplitude scaling, virtual-DAC clipping and monotonicity, protocol encode/decode, device state transitions, fault isolation, mains injection, three-level validation and browser-demo signal preparation. CI also compiles the source tree, executes the Streamlit app through Streamlit's app-testing harness, and runs the offscreen desktop-GUI smoke test.
+The tests cover deterministic generation, NPZ round trips, amplitude scaling, virtual-DAC clipping and monotonicity, protocol encode/decode, desktop and web device state transitions, per-channel fault isolation, mains injection, three-level validation, fixed eight-lane monitor rendering and Streamlit console execution. CI also compiles the source tree, executes the Streamlit app through Streamlit's app-testing harness, and runs the offscreen desktop-GUI smoke test.
 
 The synthetic generator, mock measurement path and mock acquisition path all use fixed seeds. This makes software behaviour repeatable across runs, although GUI rendering and floating-point details can vary slightly across platforms and dependency versions.
 

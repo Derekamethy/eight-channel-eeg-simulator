@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Mapping
 
 import numpy as np
 from numpy.typing import NDArray
@@ -31,22 +32,35 @@ class DemoWaveform:
 
 def build_demo_waveform(
     amplitude_scale: float = 1.0,
-    contact_channel: str = "F3",
-    contact_state: ContactState = ContactState.NORMAL,
+    contact_states: Mapping[str, ContactState] | None = None,
     interference_mode: InterferenceMode = InterferenceMode.NONE,
+    *,
+    contact_channel: str | None = None,
+    contact_state: ContactState = ContactState.NORMAL,
 ) -> DemoWaveform:
-    """Generate the same deterministic demo signal used by the desktop project."""
+    """Generate the deterministic demo with independent per-channel conditions.
+
+    The keyword-only contact_channel/contact_state pair is retained for
+    compatibility with the first browser demo. The console uses contact_states
+    so all eight electrode conditions can be inspected at once.
+    """
 
     if amplitude_scale <= 0:
         raise ValueError("amplitude_scale must be positive")
 
     data = generate_synthetic_eeg()
-    if contact_channel not in data.channel_names:
-        raise ValueError(f"Unknown channel: {contact_channel}")
+    states = dict(contact_states or {})
+    if contact_channel is not None:
+        states[contact_channel] = contact_state
+
+    unknown = sorted(set(states) - set(data.channel_names))
+    if unknown:
+        raise ValueError(f"Unknown channel(s): {', '.join(unknown)}")
 
     scaled = data.scaled(amplitude_scale)
     conditions = ElectrodeConditionModel(data.channel_names)
-    conditions.set_contact_state(contact_channel, contact_state)
+    for channel, state in states.items():
+        conditions.set_contact_state(channel, state)
     conditions.set_interference_mode(interference_mode)
     conditioned = conditions.apply(scaled.samples_uv, scaled.sample_rate_hz)
 
@@ -79,3 +93,12 @@ def time_to_sample_index(
         raise ValueError("sample_rate_hz and sample_count must be positive")
     index = int(round(float(position_seconds) * float(sample_rate_hz)))
     return min(max(index, 0), sample_count - 1)
+
+
+def format_time(seconds: float) -> str:
+    """Format seconds as the compact clock used by both simulator front ends."""
+
+    seconds = max(0.0, float(seconds))
+    minutes = int(seconds // 60)
+    remaining = seconds - minutes * 60
+    return f"{minutes:02d}:{remaining:06.3f}"
