@@ -6,7 +6,7 @@ import numpy as np
 
 from eeg_simulator.dac_model import VirtualDAC
 from eeg_simulator.fault_conditions import ContactState, InterferenceMode
-from web_demo.demo_logic import build_demo_waveform, format_time, time_to_sample_index
+from web_demo.console_logic import build_demo_waveform, format_time, time_to_sample_index
 
 
 class WebDemoLogicTests(unittest.TestCase):

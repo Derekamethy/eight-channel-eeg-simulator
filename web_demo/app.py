@@ -19,7 +19,7 @@ from eeg_simulator.fault_conditions import ContactState, InterferenceMode
 from eeg_simulator.synthetic_eeg import ACTIVE_CHANNELS, generate_synthetic_eeg
 from eeg_simulator.validation import run_validation_suite
 from web_demo.controller import WebSimulatorController
-from web_demo.demo_logic import build_demo_waveform, format_time
+from web_demo.console_logic import build_demo_waveform, format_time
 from web_demo.visualization import build_monitor_figure
 
 

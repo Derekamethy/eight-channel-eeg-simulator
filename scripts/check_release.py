@@ -14,6 +14,7 @@ REQUIRED = [
     "app.py",
     "web_demo/app.py",
     "web_demo/controller.py",
+    "web_demo/console_logic.py",
     "web_demo/demo_logic.py",
     "web_demo/visualization.py",
     "web_demo/requirements.txt",

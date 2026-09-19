@@ -3,7 +3,7 @@ from __future__ import annotations
 import unittest
 
 from eeg_simulator.fault_conditions import ContactState
-from web_demo.demo_logic import build_demo_waveform
+from web_demo.console_logic import build_demo_waveform
 from web_demo.visualization import build_monitor_figure, nice_axis_limit
 
 

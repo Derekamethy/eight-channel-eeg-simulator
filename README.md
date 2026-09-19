@@ -119,7 +119,7 @@ app.py                           Desktop application entry point
 web_demo/
   app.py                         Desktop-console-style Streamlit entry point
   controller.py                  Persistent device/playback state controller
-  demo_logic.py                  Shared signal and DAC preparation
+  console_logic.py               Shared signal and DAC preparation
   visualization.py               Fixed eight-lane Plotly monitor rendering
   requirements.txt               Hosted-demo dependency set
 eeg_simulator/

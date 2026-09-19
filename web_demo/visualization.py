@@ -10,7 +10,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 from eeg_simulator.fault_conditions import ContactState
-from web_demo.demo_logic import DemoWaveform
+from web_demo.console_logic import DemoWaveform
 
 
 CHANNEL_COLOURS = {
