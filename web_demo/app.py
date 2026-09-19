@@ -54,15 +54,25 @@ def _inject_console_css() -> None:
         [data-testid="stHeader"] { background: rgba(0,0,0,0); }
         .block-container {
             max-width: 1780px;
-            padding-top: 0.8rem;
-            padding-bottom: 1rem;
+            padding-top: 0.35rem;
+            padding-bottom: 0.45rem;
         }
         div[data-testid="stVerticalBlockBorderWrapper"] {
             background: rgba(16,26,36,0.92);
             border-color: var(--border);
             border-radius: 8px;
         }
-        div[data-testid="stHorizontalBlock"] { gap: 0.65rem; }
+        div[data-testid="stHorizontalBlock"] { gap: 0.42rem; }
+        div[data-testid="stVerticalBlock"] { gap: 0.42rem; }
+        div[data-baseweb="select"] > div { min-height: 34px; height: 34px; }
+        div[data-testid="stSelectbox"] { margin-bottom: 0; }
+        div[data-testid="stCheckbox"] { margin: 0; padding-top: 0.08rem; }
+        .stButton > button { min-height: 34px; padding: 0.22rem 0.48rem; }
+        .compact-source {
+            margin-top: 5px; padding-top: 6px; border-top: 1px solid #263946;
+            color: #8fa5b3; font-size: 0.73rem; line-height: 1.35;
+        }
+        .compact-source b { color:#dce6ee; font-weight:700; }
         .console-header {
             display:flex; align-items:flex-start; justify-content:space-between;
             gap:16px; margin: 0 0 10px 0;
@@ -315,7 +325,7 @@ left, right = st.columns([0.27, 0.73], gap="medium")
 
 with left:
     with st.container(border=True):
-        st.markdown('<div class="section-label">DEVICE</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-label">DEVICE / PLAYBACK</div>', unsafe_allow_html=True)
         if not status.connected:
             state_class = "state-disconnected"
         elif status.state is DeviceState.RUNNING:
@@ -324,18 +334,17 @@ with left:
             state_class = "state-paused"
         else:
             state_class = ""
+
         st.markdown(
             f"""
             <div class="device-line">
               <span class="device-name">Mock EEG Simulator</span>
               <span class="state-pill {state_class}">{status.state.value}</span>
             </div>
-            <div style="font-size:0.77rem;color:{'#63d9a4' if status.connected else '#ff8d8d'}">
-              {'● Connected' if status.connected else '● Disconnected'} · Mode: MOCK
-            </div>
             """,
             unsafe_allow_html=True,
         )
+
         c1, c2 = st.columns(2)
         c1.button(
             "Connect",
@@ -353,29 +362,23 @@ with left:
             on_click=_safe_action,
             args=(controller.disconnect,),
         )
-        st.button(
-            "Clear communication log",
-            key="clear_log_btn",
-            width="stretch",
-            disabled=not controller.logs,
-            on_click=controller.clear_logs,
-        )
 
-    with st.container(border=True):
-        st.markdown('<div class="section-label">PLAYBACK CONFIGURATION</div>', unsafe_allow_html=True)
-        st.select_slider(
-            "Amplitude scale",
+        cfg1, cfg2 = st.columns([0.58, 0.42])
+        cfg1.selectbox(
+            "Amplitude",
             options=(0.25, 0.5, 1.0, 2.0),
             key="amplitude_scale",
             disabled=editing_disabled,
-            format_func=lambda value: f"{value:g}×",
+            format_func=lambda value: f"Amplitude {value:g}×",
+            label_visibility="collapsed",
         )
-        st.checkbox(
+        cfg2.checkbox(
             "Loop playback",
             key="loop_playback",
             disabled=editing_disabled,
         )
-        p1, p2 = st.columns(2)
+
+        p1, p2, p3, p4 = st.columns(4)
         p1.button(
             "START",
             key="start_btn",
@@ -393,7 +396,6 @@ with left:
             on_click=_safe_action,
             args=(controller.pause,),
         )
-        p3, p4 = st.columns(2)
         p3.button(
             "STOP",
             key="stop_btn",
@@ -411,81 +413,86 @@ with left:
             args=(controller.reset,),
         )
 
-
-    with st.container(border=True):
-        st.markdown('<div class="section-label">EEG SOURCE</div>', unsafe_allow_html=True)
         st.markdown(
             """
-            <div class="source-grid">
-              <span>Source</span><b>Synthetic demo</b>
-              <span>Sample rate</span><b>256 Hz</b>
-              <span>Duration</span><b>60.0 s</b>
-              <span>Samples/ch</span><b>15,360</b>
-              <span>Channels</span><b>8</b>
-              <span>REF / GND</span><b>Cz / Pz</b>
+            <div class="compact-source">
+              <b>Synthetic demo</b> · 256 Hz · 60.0 s · 15,360 samples/ch ·
+              8 channels · REF Cz · GND Pz · labelled event 20–30 s
             </div>
             """,
             unsafe_allow_html=True,
         )
-        st.caption("Deterministic non-clinical waveform with a labelled 20–30 s test event.")
 
     with st.container(border=True):
-        st.markdown('<div class="section-label">ELECTRODES / CHANNELS</div>', unsafe_allow_html=True)
-        for start in range(0, len(ACTIVE_CHANNELS), 2):
-            row = st.columns(2)
-            for offset, channel in enumerate(ACTIVE_CHANNELS[start:start + 2]):
-                row[offset].checkbox(
-                    channel,
-                    key=f"active_{channel}",
-                    disabled=editing_disabled,
-                    on_change=_ensure_active_channel,
-                    args=(channel,),
-                )
-
-    with st.container(border=True):
-        top_a, top_b = st.columns([0.62, 0.38])
-        top_a.markdown('<div class="section-label">ELECTRODE CONDITIONS</div>', unsafe_allow_html=True)
-        top_b.button(
+        title_col, reset_col = st.columns([0.74, 0.26])
+        title_col.markdown(
+            '<div class="section-label">CHANNELS / ELECTRODE CONDITIONS</div>',
+            unsafe_allow_html=True,
+        )
+        reset_col.button(
             "Reset",
             key="reset_conditions_btn",
             width="stretch",
             disabled=editing_disabled,
             on_click=_reset_conditions,
         )
+
         for start in range(0, len(ACTIVE_CHANNELS), 2):
-            row = st.columns(2)
+            pair = st.columns(2)
             for offset, channel in enumerate(ACTIVE_CHANNELS[start:start + 2]):
-                row[offset].selectbox(
-                    channel,
-                    list(ContactState),
-                    key=f"condition_{channel}",
-                    disabled=editing_disabled,
-                    format_func=lambda value: value.short_label,
-                )
-        st.selectbox(
+                with pair[offset]:
+                    cell = st.columns([0.34, 0.66])
+                    cell[0].checkbox(
+                        channel,
+                        key=f"active_{channel}",
+                        disabled=editing_disabled,
+                        on_change=_ensure_active_channel,
+                        args=(channel,),
+                    )
+                    cell[1].selectbox(
+                        f"{channel} condition",
+                        list(ContactState),
+                        key=f"condition_{channel}",
+                        disabled=editing_disabled,
+                        format_func=lambda value: value.short_label,
+                        label_visibility="collapsed",
+                    )
+
+        artifact = st.columns([0.30, 0.70])
+        artifact[0].markdown(
+            '<div style="padding-top:8px;color:#9fb4bf;font-size:0.74rem;font-weight:700">ARTEFACT</div>',
+            unsafe_allow_html=True,
+        )
+        artifact[1].selectbox(
             "Signal artefact",
             list(InterferenceMode),
             key="interference_mode",
             disabled=editing_disabled,
             format_func=lambda value: value.value,
+            label_visibility="collapsed",
         )
-        st.caption("Software preview only; physical impedance and lead-off hardware are not implemented.")
 
-
-    a1, a2 = st.columns(2)
-    a1.button(
-        "SIGNAL CHAIN",
-        key="signal_chain_btn",
-        width="stretch",
-        on_click=_toggle_signal_chain,
-    )
-    a2.button(
-        "RUN VALIDATION",
-        key="validation_btn",
-        width="stretch",
-        on_click=_safe_action,
-        args=(_run_validation,),
-    )
+        tools1, tools2, tools3 = st.columns(3)
+        tools1.button(
+            "SIGNAL CHAIN",
+            key="signal_chain_btn",
+            width="stretch",
+            on_click=_toggle_signal_chain,
+        )
+        tools2.button(
+            "VALIDATE",
+            key="validation_btn",
+            width="stretch",
+            on_click=_safe_action,
+            args=(_run_validation,),
+        )
+        tools3.button(
+            "CLEAR LOG",
+            key="clear_log_btn",
+            width="stretch",
+            disabled=not controller.logs,
+            on_click=controller.clear_logs,
+        )
 
     if st.session_state.control_error:
         st.error(st.session_state.control_error)
@@ -520,7 +527,7 @@ with right:
                 loop=st.session_state.loop_playback,
                 state_label=controller.status.state.value,
             ),
-            height=545,
+            height=415,
             scrolling=False,
         )
 
