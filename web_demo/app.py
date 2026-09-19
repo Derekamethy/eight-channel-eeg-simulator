@@ -159,16 +159,25 @@ def _inject_console_css() -> None:
         .boundary-note {
             color:#8399a6; font-size:0.72rem; padding-top:4px;
         }
-        .chain {
-            display:grid; grid-template-columns:1fr 1fr;
-            gap:7px; align-items:stretch; margin-top:8px;
-        }
+        .chain { list-style:none; padding:0; margin:8px 0; display:grid; gap:18px; }
         .chain-card {
-            padding:9px 8px; border-radius:7px; border:1px solid #314653;
-            background:#101c26; min-height:88px;
+            position:relative; display:grid; grid-template-columns:32px 1fr;
+            gap:12px; padding:12px 16px; border-radius:8px;
+            border:1px solid #314653; background:#101c26;
         }
-        .chain-card b { display:block; font-size:0.76rem; color:#e4eef3; }
-        .chain-card small { color:#8fa5b3; font-size:0.68rem; }
+        .chain-card:not(:last-child)::after {
+            content:"↓"; position:absolute; left:25px; bottom:-19px;
+            color:#9fbaca; font-size:18px; line-height:18px;
+        }
+        .chain-step {
+            width:30px; height:30px; display:grid; place-items:center;
+            border:1px solid #658491; border-radius:50%; color:#edf6fa;
+            font-size:15px; font-weight:700;
+        }
+        .chain-heading { display:flex; align-items:center; flex-wrap:wrap; gap:8px 14px; }
+        .chain-card b { font-size:16px; line-height:1.4; color:#edf6fa; }
+        .chain-status { font-size:11px; color:#c3d5de; letter-spacing:.03em; }
+        .chain-card p { margin:4px 0 0; font-size:14px; line-height:1.5; color:#bdd0da; }
         .implemented { border-color:#3f796b; background:#112c27; }
         .partial { border-color:#80643a; background:#302719; }
         .future { border-color:#5c5368; background:#24212b; }
@@ -228,7 +237,6 @@ def _inject_console_css() -> None:
             height:calc(100dvh - 248px); min-height:364px;
         }
         @media (max-width: 1050px) {
-            .chain { grid-template-columns:1fr 1fr; }
             .console-title { font-size:1.5rem; }
         }
         </style>
@@ -651,22 +659,35 @@ with validation_col, st.popover("Validation", width="stretch"):
                 )
             st.caption("Deterministic software mocks only; these are not physical-device measurements or clinical detection results.")
 
-with chain_col, st.popover("Signal chain", width="stretch"):
-    with st.container(border=True):
-        st.markdown('<div class="section-label">SIGNAL CHAIN / SYSTEM ARCHITECTURE</div>', unsafe_allow_html=True)
-        st.markdown(
-            """
-            <div class="chain">
-              <div class="chain-card implemented"><b>EEG SOURCE</b><small>Recorded or synthetic<br>8 ch · 256 Hz example<br>IMPLEMENTED</small></div>
-              <div class="chain-card implemented"><b>DESKTOP / WEB CONTROL</b><small>Playback · conditions<br>device abstraction<br>IMPLEMENTED</small></div>
-              <div class="chain-card partial"><b>USB / SERIAL</b><small>Command path exists<br>binary waveform transfer<br>PARTIAL</small></div>
-              <div class="chain-card future"><b>MCU / TIMER / DMA</b><small>Ring buffer<br>deterministic updates<br>FUTURE HARDWARE</small></div>
-              <div class="chain-card future"><b>8-CH DAC / ANALOGUE</b><small>Scaling · attenuation<br>calibrated µV output<br>FUTURE HARDWARE</small></div>
-              <div class="chain-card future"><b>ELECTRODE INTERFACE</b><small>Impedance · lead-off<br>fault switching<br>FUTURE HARDWARE</small></div>
-              <div class="chain-card external"><b>EEG ACQUISITION</b><small>AFE · ADC · downstream<br>measurement path<br>EXTERNAL</small></div>
-            </div>
-            """,
-            unsafe_allow_html=True,
+@st.dialog("Signal chain · from source to acquisition", width="large")
+def _show_signal_chain() -> None:
+    stages = (
+        ("implemented", "EEG source", "Implemented",
+         "Start with recorded or synthetic EEG — for example, 8 channels at 256 Hz."),
+        ("implemented", "Desktop / web control", "Implemented",
+         "Choose playback settings and channel conditions, then send commands through the device interface."),
+        ("partial", "USB / serial", "Partial",
+         "Carry commands to the device. Binary waveform transfer remains to be completed."),
+        ("future", "MCU / timer / DMA", "Future hardware",
+         "Buffer the samples and schedule deterministic updates for the DAC."),
+        ("future", "8-channel DAC / analogue", "Future hardware",
+         "Convert samples to analogue signals, then scale and attenuate to calibrated µV output."),
+        ("future", "Electrode interface", "Future hardware",
+         "Route the output through controlled impedance, lead-off and fault switching."),
+        ("external", "EEG acquisition", "External",
+         "Capture the signal through the acquisition system’s analogue front end and ADC for downstream measurement."),
+    )
+    cards = []
+    for number, (state, title, status_text, description) in enumerate(stages, 1):
+        cards.append(
+            f'<li class="chain-card {state}"><span class="chain-step">{number}</span>'
+            f'<div><div class="chain-heading"><b>{escape(title)}</b>'
+            f'<span class="chain-status">{escape(status_text)}</span></div>'
+            f'<p>{escape(description)}</p></div></li>'
         )
-        st.caption("Known input → controlled signal path → acquisition → automated verification. The browser console intentionally keeps the physical-hardware boundary explicit.")
+    st.html('<ol class="chain" aria-label="Signal path">' + "".join(cards) + '</ol>')
 
+
+with chain_col:
+    if st.button("Signal chain", key="signal_chain_btn", width="stretch"):
+        _show_signal_chain()

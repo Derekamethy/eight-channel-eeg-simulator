@@ -43,10 +43,19 @@ class WebDemoAppTests(unittest.TestCase):
     def test_secondary_content_is_in_popovers_and_playback_has_help(self) -> None:
         app = self.make_app()
         self.assertEqual([p.proto.popover.label for p in app.get("popover")],
-                         ["Protocol log", "Validation", "Signal chain"])
+                         ["Protocol log", "Validation"])
         for key, help_text in (("start_btn", "Start"), ("pause_btn", "Pause"),
                                ("stop_btn", "Stop"), ("reset_btn", "Reset")):
             self.assertEqual(app.get_by_key(key).help, help_text)
+
+    def test_signal_chain_opens_readable_sequential_dialog(self) -> None:
+        app = self.make_app()
+        app.get_by_key("signal_chain_btn").click().run()
+        self.assertEqual(list(app.exception), [])
+        content = "".join(element.value for element in app.get("html"))
+        self.assertIn('<ol class="chain"', content)
+        self.assertEqual(content.count('class="chain-step"'), 7)
+        self.assertLess(content.index("EEG source"), content.index("EEG acquisition"))
 
     def test_connect_then_start_runs_without_exception(self) -> None:
         app = self.make_app()
