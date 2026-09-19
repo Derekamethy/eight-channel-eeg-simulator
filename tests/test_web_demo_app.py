@@ -35,6 +35,12 @@ class WebDemoAppTests(unittest.TestCase):
             self.assertEqual(app.session_state[f"condition_{channel}"], ContactState.VERY_HIGH)
             app.get_by_key(f"active_{channel}").uncheck().run()
         self.assertTrue(app.session_state["active_O2"])
+        self.assertEqual(app.session_state["control_error"], "")
+        toasts = app.get("toast")
+        self.assertEqual(len(toasts), 1)
+        self.assertEqual(toasts[0].value, "At least one channel must remain active.")
+        app.get_by_key("active_F3").check().run()
+        self.assertEqual(app.session_state["control_error"], "")
         app.get_by_key("reset_conditions_btn").click().run()
         for channel in ACTIVE_CHANNELS:
             self.assertEqual(app.session_state[f"condition_{channel}"], ContactState.NORMAL)

@@ -305,6 +305,8 @@ def _ensure_active_channel(changed_channel: str) -> None:
     if not _active_channels():
         st.session_state[f"active_{changed_channel}"] = True
         st.session_state.control_error = "At least one channel must remain active."
+    else:
+        st.session_state.control_error = ""
 
 
 def _reset_conditions() -> None:
@@ -515,6 +517,7 @@ with left, st.container(key="controls"):
 
     if st.session_state.control_error:
         st.toast(st.session_state.control_error, icon="⚠️")
+        st.session_state.control_error = ""
 
 demo = build_demo_waveform(
     amplitude_scale=st.session_state.amplitude_scale,
