@@ -133,12 +133,12 @@ def _inject_console_css() -> None:
             border-bottom:1px solid #2d424f; font-weight:700;
         }
         .dac-table td {
-            padding:4px 7px; border-bottom:1px solid rgba(57,78,91,0.45);
+            padding:3px 7px; border-bottom:1px solid rgba(57,78,91,0.45);
             color:#dce6ee; font-variant-numeric:tabular-nums;
         }
         .dac-table tr.inactive td { color:#647986; }
         .log-box {
-            height:238px; overflow:auto; background:#091119; border:1px solid #233541;
+            height:190px; overflow:auto; background:#091119; border:1px solid #233541;
             border-radius:5px; padding:8px; color:#b9d3df; font-size:0.72rem;
             line-height:1.45; font-family:Consolas, "SFMono-Regular", monospace;
             white-space:pre-wrap;

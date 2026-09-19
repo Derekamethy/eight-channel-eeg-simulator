@@ -84,7 +84,7 @@ def build_live_monitor_html(
     """
 
     width = 1200.0
-    height = 500.0
+    height = 420.0
     left = 88.0
     right = 18.0
     top = 24.0
@@ -183,7 +183,7 @@ html, body {{ margin:0; padding:0; background:#0d1722; color:#dce6ee; overflow:h
 .event {{ min-height:24px; margin:0 4px 6px; padding:4px 8px; border-radius:5px;
           border:1px solid transparent; font-size:11px; font-weight:700; color:transparent; }}
 .event.active {{ border-color:#6f5934; background:#32291c; color:#ffd27d; }}
-svg {{ width:100%; height:auto; display:block; background:#0d1722; }}
+svg {{ width:100%; height:330px; display:block; background:#0d1722; }}
 .bottom {{ display:flex; align-items:center; gap:10px; padding:4px 8px 0; color:#b7d8e8;
            font-size:11px; font-weight:700; }}
 .track {{ flex:1; height:5px; background:#1b2b36; border-radius:999px; overflow:hidden; }}
