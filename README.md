@@ -23,7 +23,7 @@ The Streamlit front end in `web_demo/` is designed as a browser version of the d
 The browser console provides:
 
 - explicit **Connect / Disconnect** device state and **Start / Pause / Stop / Reset** playback controls;
-- automatic playback position driven by the maintained monotonic `PlaybackClock`, with the waveform cursor and DAC table updating during playback;
+- automatic playback position driven by the maintained monotonic `PlaybackClock`, with a browser-side `requestAnimationFrame` cursor that moves without rebuilding the EEG waveform;
 - a compact fixed **eight-lane EEG monitor** with the 20–30 s synthetic event shaded directly on the traces;
 - independent Normal / Moderate / High Z / Very High Z / Lead Off conditions for all eight channels plus global 50/60 Hz interference;
 - simultaneous eight-channel **target µV → 16-bit virtual DAC code** inspection at the current playback position;
@@ -44,7 +44,7 @@ For Streamlit Community Cloud, use `web_demo/app.py` as the app entry point. The
 | Capability | Implemented behaviour |
 | --- | --- |
 | EEG source | Deterministic 8-channel synthetic waveform or NPZ/optional EDF input |
-| Browser demo | Desktop-console-style live playback, eight-lane monitor, DAC table and protocol log |
+| Browser demo | Desktop-console-style playback, flicker-free eight-lane monitor, DAC table and protocol log |
 | Default demo | 60 s at 256 Hz, 15,360 samples per channel |
 | Channels | F3, F4, C3, C4, T3, T4, O1, O2 |
 | Playback | Start, pause, stop, loop and monotonic-clock sample tracking |
@@ -120,7 +120,7 @@ web_demo/
   app.py                         Desktop-console-style Streamlit entry point
   controller.py                  Persistent device/playback state controller
   console_logic.py               Shared signal and DAC preparation
-  visualization.py               Fixed eight-lane Plotly monitor rendering
+  live_monitor.py                Flicker-free SVG monitor and browser-side cursor
   requirements.txt               Hosted-demo dependency set
 eeg_simulator/
   eeg_data.py                    EEG model, NPZ and optional EDF I/O
@@ -182,7 +182,7 @@ python -m unittest discover -s tests -v
 python scripts/check_release.py
 ```
 
-The tests cover deterministic generation, NPZ round trips, amplitude scaling, virtual-DAC clipping and monotonicity, protocol encode/decode, desktop and web device state transitions, per-channel fault isolation, mains injection, three-level validation, fixed eight-lane monitor rendering and Streamlit console execution. CI also compiles the source tree, executes the Streamlit app through Streamlit's app-testing harness, and runs the offscreen desktop-GUI smoke test.
+The tests cover deterministic generation, NPZ round trips, amplitude scaling, virtual-DAC clipping and monotonicity, protocol encode/decode, desktop and web device state transitions, per-channel fault isolation, mains injection, three-level validation, flicker-free eight-lane monitor rendering and Streamlit console execution. CI also compiles the source tree, executes the Streamlit app through Streamlit's app-testing harness, and runs the offscreen desktop-GUI smoke test.
 
 The synthetic generator, mock measurement path and mock acquisition path all use fixed seeds. This makes software behaviour repeatable across runs, although GUI rendering and floating-point details can vary slightly across platforms and dependency versions.
 

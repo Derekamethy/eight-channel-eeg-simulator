@@ -7,8 +7,8 @@ from pathlib import Path
 import sys
 from typing import Callable
 
-import numpy as np
 import streamlit as st
+import streamlit.components.v1 as components
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -19,8 +19,8 @@ from eeg_simulator.fault_conditions import ContactState, InterferenceMode
 from eeg_simulator.synthetic_eeg import ACTIVE_CHANNELS, generate_synthetic_eeg
 from eeg_simulator.validation import run_validation_suite
 from web_demo.controller import WebSimulatorController
-from web_demo.console_logic import build_demo_waveform, format_time
-from web_demo.visualization import build_monitor_figure
+from web_demo.console_logic import build_demo_waveform
+from web_demo.live_monitor import build_live_monitor_html
 
 
 st.set_page_config(
@@ -495,11 +495,35 @@ demo = build_demo_waveform(
 )
 active_channels = _active_channels()
 contact_states = _contact_states()
-run_every = 0.25 if controller.status.state is DeviceState.RUNNING else None
+monitor_snapshot = controller.snapshot()
+monitor_running = controller.status.state is DeviceState.RUNNING
+telemetry_every = 0.5 if monitor_running else None
 
 with right:
-    @st.fragment(run_every=run_every)
-    def render_live_console() -> None:
+    with st.container(border=True):
+        if demo.abnormal_summary:
+            st.markdown(
+                '<div class="condition-banner">SIMULATED CONDITIONS · '
+                + " · ".join(escape(item) for item in demo.abnormal_summary)
+                + ' · software preview</div>',
+                unsafe_allow_html=True,
+            )
+        components.html(
+            build_live_monitor_html(
+                demo,
+                active_channels,
+                contact_states,
+                initial_position_seconds=monitor_snapshot.position_seconds,
+                running=monitor_running,
+                loop=st.session_state.loop_playback,
+                state_label=controller.status.state.value,
+            ),
+            height=690,
+            scrolling=False,
+        )
+
+    @st.fragment(run_every=telemetry_every)
+    def render_live_telemetry() -> None:
         snapshot = controller.snapshot()
         if snapshot.completed:
             st.rerun()
@@ -508,69 +532,6 @@ with right:
             max(snapshot.sample_index, 0),
             demo.samples_uv.shape[1] - 1,
         )
-        position = sample_index / demo.sample_rate_hz
-        device_state = controller.status.state.value
-        state_class = (
-            "state-running"
-            if controller.status.state is DeviceState.RUNNING
-            else "state-paused"
-            if controller.status.state is DeviceState.PAUSED
-            else ""
-        )
-
-        with st.container(border=True):
-            st.markdown(
-                f"""
-                <div class="monitor-toolbar">
-                  <span class="monitor-title">WAVEFORM MONITOR · SIMULATED EEG OUTPUT (µV)</span>
-                  <span class="state-pill {state_class}">{device_state}</span>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
-            in_event = any(
-                onset <= position < onset + duration
-                for onset, duration, _description in demo.annotations
-            )
-            if in_event:
-                st.markdown(
-                    '<div class="event-banner">SYNTHETIC DEMO EVENT · 20–30 s rhythmic test event · engineering demonstration only</div>',
-                    unsafe_allow_html=True,
-                )
-            if demo.abnormal_summary:
-                st.markdown(
-                    '<div class="condition-banner">SIMULATED CONDITIONS · '
-                    + " · ".join(escape(item) for item in demo.abnormal_summary)
-                    + ' · software preview</div>',
-                    unsafe_allow_html=True,
-                )
-
-            figure = build_monitor_figure(
-                demo,
-                active_channels,
-                contact_states,
-                position,
-            )
-            st.plotly_chart(
-                figure,
-                width="stretch",
-                config={
-                    "displaylogo": False,
-                    "scrollZoom": True,
-                    "modeBarButtonsToRemove": ["lasso2d", "select2d"],
-                },
-            )
-            progress = min(max(position / demo.duration_seconds, 0.0), 1.0)
-            st.markdown(
-                f"""
-                <div class="position-strip">
-                  <span>Position {format_time(position)} / {format_time(demo.duration_seconds)}</span>
-                  <div class="position-track"><div class="position-fill" style="width:{progress * 100:.2f}%"></div></div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
 
         lower_left, lower_right = st.columns([0.46, 0.54], gap="medium")
         with lower_left:
@@ -623,7 +584,7 @@ with right:
                         unsafe_allow_html=True,
                     )
 
-    render_live_console()
+    render_live_telemetry()
 
     result = st.session_state.validation_result
     if result is not None:
