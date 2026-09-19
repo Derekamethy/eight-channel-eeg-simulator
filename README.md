@@ -52,7 +52,7 @@ For Streamlit Community Cloud, use `web_demo/app.py` as the app entry point. The
 | Fault scenarios | Normal, moderate/high/very-high impedance, lead-off, 50/60 Hz interference |
 | Device layer | Mock device plus serial-adapter skeleton behind one interface |
 | Verification | Simulator-output, acquisition and event-timing checks |
-| Automated tests | 28 unit tests across waveform, DAC, protocol, faults, validation and browser-demo logic |
+| Automated tests | 29 unit tests across waveform, DAC, protocol, faults, validation and browser-demo logic |
 
 ## Signal path and system boundary
 
