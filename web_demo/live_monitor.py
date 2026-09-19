@@ -13,6 +13,10 @@ from eeg_simulator.fault_conditions import ContactState
 from web_demo.console_logic import DemoWaveform
 
 
+MONITOR_SVG_HEIGHT_PX = 500
+MONITOR_IFRAME_HEIGHT_PX = 575
+
+
 CHANNEL_COLOURS = {
     ContactState.NORMAL: "#67d4ff",
     ContactState.MODERATE: "#a6d8d0",
@@ -183,7 +187,7 @@ html, body {{ margin:0; padding:0; background:#0d1722; color:#dce6ee; overflow:h
 .event {{ min-height:20px; margin:0 4px 6px; padding:4px 8px; border-radius:5px;
           border:1px solid transparent; font-size:11px; font-weight:700; color:transparent; }}
 .event.active {{ border-color:#6f5934; background:#32291c; color:#ffd27d; }}
-svg {{ width:100%; height:auto; display:block; background:#0d1722; }}
+svg {{ width:100%; height:{MONITOR_SVG_HEIGHT_PX}px; display:block; background:#0d1722; }}
 .bottom {{ display:flex; align-items:center; gap:10px; padding:4px 8px 0; color:#b7d8e8;
            font-size:11px; font-weight:700; }}
 .track {{ flex:1; height:5px; background:#1b2b36; border-radius:999px; overflow:hidden; }}

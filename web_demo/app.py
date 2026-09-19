@@ -20,7 +20,7 @@ from eeg_simulator.synthetic_eeg import ACTIVE_CHANNELS, generate_synthetic_eeg
 from eeg_simulator.validation import run_validation_suite
 from web_demo.controller import WebSimulatorController
 from web_demo.console_logic import build_demo_waveform
-from web_demo.live_monitor import build_live_monitor_html
+from web_demo.live_monitor import MONITOR_IFRAME_HEIGHT_PX, build_live_monitor_html
 
 
 st.set_page_config(
@@ -526,7 +526,7 @@ with right:
                 loop=st.session_state.loop_playback,
                 state_label=controller.status.state.value,
             ),
-            height=620,
+            height=MONITOR_IFRAME_HEIGHT_PX,
             scrolling=False,
         )
 

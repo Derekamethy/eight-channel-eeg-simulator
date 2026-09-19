@@ -4,7 +4,11 @@ import unittest
 
 from eeg_simulator.fault_conditions import ContactState
 from web_demo.console_logic import build_demo_waveform
-from web_demo.live_monitor import build_live_monitor_html
+from web_demo.live_monitor import (
+    MONITOR_IFRAME_HEIGHT_PX,
+    MONITOR_SVG_HEIGHT_PX,
+    build_live_monitor_html,
+)
 
 
 class WebLiveMonitorTests(unittest.TestCase):
@@ -28,6 +32,20 @@ class WebLiveMonitorTests(unittest.TestCase):
         self.assertEqual(html.count('id="cursor"'), 1)
         self.assertIn("requestAnimationFrame(draw)", html)
         self.assertNotIn("plotly", html.lower())
+
+    def test_monitor_uses_explicit_matched_heights(self) -> None:
+        html = build_live_monitor_html(
+            self.demo,
+            self.demo.channel_names,
+            self.states,
+            initial_position_seconds=0.0,
+            running=False,
+            loop=False,
+            state_label="READY",
+        )
+        self.assertIn(f"height:{MONITOR_SVG_HEIGHT_PX}px", html)
+        self.assertEqual(MONITOR_IFRAME_HEIGHT_PX, 575)
+        self.assertNotIn("height:auto", html)
 
     def test_loop_and_initial_position_are_encoded_for_front_end(self) -> None:
         html = build_live_monitor_html(
