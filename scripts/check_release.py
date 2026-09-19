@@ -18,6 +18,8 @@ REQUIRED = [
     "eeg_simulator/__init__.py",
     "eeg_simulator/gui.py",
     "tests/test_validation.py",
+    "tests/test_web_demo_logic.py",
+    "tests/test_web_demo_app.py",
     "data/synthetic_eeg_demo.npz",
     "assets/eeg_simulator_demo.png",
     ".github/workflows/ci.yml",

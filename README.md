@@ -52,7 +52,7 @@ For Streamlit Community Cloud, use `web_demo/app.py` as the app entry point. The
 | Fault scenarios | Normal, moderate/high/very-high impedance, lead-off, 50/60 Hz interference |
 | Device layer | Mock device plus serial-adapter skeleton behind one interface |
 | Verification | Simulator-output, acquisition and event-timing checks |
-| Automated tests | 27 unit tests across waveform, DAC, protocol, faults, validation and browser-demo logic |
+| Automated tests | 28 unit tests across waveform, DAC, protocol, faults, validation and browser-demo logic |
 
 ## Signal path and system boundary
 
@@ -179,7 +179,7 @@ python -m unittest discover -s tests -v
 python scripts/check_release.py
 ```
 
-The unit tests cover deterministic generation, NPZ round trips, amplitude scaling, virtual-DAC clipping and monotonicity, protocol encode/decode, device state transitions, fault isolation, mains injection, three-level validation and browser-demo signal preparation. CI also compiles the source tree and runs the offscreen GUI smoke test.
+The unit tests cover deterministic generation, NPZ round trips, amplitude scaling, virtual-DAC clipping and monotonicity, protocol encode/decode, device state transitions, fault isolation, mains injection, three-level validation and browser-demo signal preparation. CI also compiles the source tree, executes the Streamlit app through Streamlit's app-testing harness, and runs the offscreen desktop-GUI smoke test.
 
 The synthetic generator, mock measurement path and mock acquisition path all use fixed seeds. This makes software behaviour repeatable across runs, although GUI rendering and floating-point details can vary slightly across platforms and dependency versions.
 
