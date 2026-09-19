@@ -51,10 +51,10 @@ def _inject_console_css() -> None:
             background: linear-gradient(180deg, #0b1219 0%, #0d151d 100%);
             color: var(--text);
         }
-        [data-testid="stHeader"] { background: rgba(0,0,0,0); }
         .block-container {
             max-width: 1780px;
-            padding-top: 0.35rem;
+            padding-top: 3.6rem;
+            padding-left: 1rem; padding-right: 1rem;
             padding-bottom: 0.45rem;
         }
         div[data-testid="stVerticalBlockBorderWrapper"] {
@@ -74,7 +74,7 @@ def _inject_console_css() -> None:
         }
         .compact-source b { color:#dce6ee; font-weight:700; }
         .console-header {
-            display:flex; align-items:center; justify-content:space-between;
+            display:flex; align-items:center; justify-content:flex-start; flex-wrap:wrap;
             gap:12px; margin:0 0 6px 0;
         }
         .console-title {
@@ -140,14 +140,14 @@ def _inject_console_css() -> None:
             gap:5px; margin-top:4px;
         }
         .dac-chip {
-            display:grid; grid-template-columns:28px 1fr; align-items:center;
+            display:grid; grid-template-columns:22px minmax(0, 1fr) 42px; align-items:center;
             gap:2px 5px; padding:6px 7px; border:1px solid #2a3e4b;
             background:#0d1722; border-radius:5px; min-width:0;
             font-size:0.70rem; font-variant-numeric:tabular-nums;
         }
         .dac-chip b { color:#7ad7ff; }
         .dac-chip span { color:#c9d7de; text-align:right; white-space:nowrap; }
-        .dac-chip code { grid-column:2; color:#91a9b7; font-family:Consolas,monospace; text-align:right; }
+        .dac-chip code { color:#91a9b7; font-family:Consolas,monospace; text-align:right; }
         .dac-chip.inactive { opacity:0.38; }
         .log-box {
             max-height:190px; overflow:auto; background:#091119; border:1px solid #233541;
@@ -160,7 +160,7 @@ def _inject_console_css() -> None:
             color:#8399a6; font-size:0.72rem; padding-top:4px;
         }
         .chain {
-            display:grid; grid-template-columns:repeat(7, minmax(100px, 1fr));
+            display:grid; grid-template-columns:1fr 1fr;
             gap:7px; align-items:stretch; margin-top:8px;
         }
         .chain-card {
@@ -194,6 +194,39 @@ def _inject_console_css() -> None:
             font-size:0.78rem;
         }
         [data-testid="stCaptionContainer"] { color:#7f96a3; }
+        [data-testid="stMarkdownContainer"]:has(.section-label, .device-line, .compact-source,
+            .condition-banner, .console-header, .dac-strip, .validation-pass,
+            .validation-card, .chain, .log-box) { margin-bottom:0; }
+        /* Compact controls retain native keyboard and screen-reader support. */
+        .st-key-controls [data-testid="stVerticalBlock"] { gap:2px; }
+        .st-key-controls [data-testid="stLayoutWrapper"] { min-height:0; }
+        .st-key-controls [data-testid="stSelectbox"] [role="group"] {
+            min-height:26px; height:26px; font-size:13px;
+        }
+        .st-key-controls [role="combobox"] { padding:2px 8px; font-size:13px; }
+        .st-key-controls [data-testid="stCheckbox"] label {
+            min-height:26px; padding:0;
+        }
+        .st-key-controls div[data-testid="stCheckbox"] { padding:0; margin:0 !important; }
+        .st-key-controls [data-testid="stVerticalBlockBorderWrapper"] > div,
+        .st-key-controls [data-testid="stVerticalBlock"][data-test-scroll-behavior] {
+            padding:8px;
+        }
+        .st-key-eeg [data-testid="stElementContainer"]:has(iframe) { flex-basis:auto; }
+        .st-key-controls button { min-height:28px; padding:2px 5px; }
+        .st-key-controls button p { font-size:13px; }
+        .st-key-controls .section-label { margin-bottom:0; }
+        .st-key-controls [data-testid="stVerticalBlockBorderWrapper"],
+        .st-key-controls [data-testid="stVerticalBlock"] [data-testid="stVerticalBlock"] {
+            border-color:var(--border);
+        }
+        .condition-banner { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .st-key-eeg iframe { height:calc(100dvh - 204px); min-height:400px; }
+        .st-key-eeg [data-testid="stElementContainer"]:has(iframe) { height:calc(100dvh - 204px); min-height:400px; }
+        .st-key-eeg:has(.condition-banner) iframe,
+        .st-key-eeg:has(.condition-banner) [data-testid="stElementContainer"]:has(iframe) {
+            height:calc(100dvh - 248px); min-height:364px;
+        }
         @media (max-width: 1050px) {
             .chain { grid-template-columns:1fr 1fr; }
             .console-title { font-size:1.5rem; }
@@ -210,8 +243,6 @@ if "controller" not in st.session_state:
     st.session_state.controller = WebSimulatorController()
 if "control_error" not in st.session_state:
     st.session_state.control_error = ""
-if "show_signal_chain" not in st.session_state:
-    st.session_state.show_signal_chain = False
 if "validation_result" not in st.session_state:
     st.session_state.validation_result = None
 for channel in ACTIVE_CHANNELS:
@@ -300,10 +331,6 @@ def _run_validation() -> None:
     controller.append_app_log("Three-level software-reference validation completed")
 
 
-def _toggle_signal_chain() -> None:
-    st.session_state.show_signal_chain = not st.session_state.show_signal_chain
-
-
 st.markdown(
     """
     <div class="console-header">
@@ -323,9 +350,8 @@ editing_disabled = running
 
 left, right = st.columns([0.23, 0.77], gap="medium")
 
-with left:
+with left, st.container(key="controls"):
     with st.container(border=True):
-        st.markdown('<div class="section-label">DEVICE / PLAYBACK</div>', unsafe_allow_html=True)
         if not status.connected:
             state_class = "state-disconnected"
         elif status.state is DeviceState.RUNNING:
@@ -371,6 +397,7 @@ with left:
             disabled=editing_disabled,
             format_func=lambda value: f"{value:g}×",
             label_visibility="collapsed",
+            help="Amplitude scale",
         )
         cfg2.checkbox(
             "Loop",
@@ -382,6 +409,7 @@ with left:
         p1.button(
             "▶",
             key="start_btn",
+            help="Start",
             type="primary",
             width="stretch",
             disabled=not status.connected or status.state is DeviceState.RUNNING,
@@ -391,6 +419,7 @@ with left:
         p2.button(
             "Ⅱ",
             key="pause_btn",
+            help="Pause",
             width="stretch",
             disabled=status.state is not DeviceState.RUNNING,
             on_click=_safe_action,
@@ -399,6 +428,7 @@ with left:
         p3.button(
             "■",
             key="stop_btn",
+            help="Stop",
             width="stretch",
             disabled=status.state not in (DeviceState.RUNNING, DeviceState.PAUSED),
             on_click=_safe_action,
@@ -407,6 +437,7 @@ with left:
         p4.button(
             "↺",
             key="reset_btn",
+            help="Reset",
             width="stretch",
             disabled=not status.connected,
             on_click=_safe_action,
@@ -474,23 +505,8 @@ with left:
             label_visibility="collapsed",
         )
 
-        tools1, tools2 = st.columns(2)
-        tools1.button(
-            "CHAIN",
-            key="signal_chain_btn",
-            width="stretch",
-            on_click=_toggle_signal_chain,
-        )
-        tools2.button(
-            "VALIDATE",
-            key="validation_btn",
-            width="stretch",
-            on_click=_safe_action,
-            args=(_run_validation,),
-        )
-
     if st.session_state.control_error:
-        st.error(st.session_state.control_error)
+        st.toast(st.session_state.control_error, icon="⚠️")
 
 demo = build_demo_waveform(
     amplitude_scale=st.session_state.amplitude_scale,
@@ -504,10 +520,10 @@ monitor_running = controller.status.state is DeviceState.RUNNING
 telemetry_every = 0.5 if monitor_running else None
 
 with right:
-    monitor_col, dac_col = st.columns([0.82, 0.18], gap="small")
+    monitor_col, dac_col = st.columns([0.79, 0.21], gap="small")
 
     with monitor_col:
-        with st.container(border=True):
+        with st.container(border=True, key="eeg"):
             if demo.abnormal_summary:
                 st.markdown(
                     '<div class="condition-banner">SIMULATED · '
@@ -563,7 +579,10 @@ with right:
 
         render_live_dac()
 
-    with st.expander("Protocol log", expanded=False):
+
+log_col, validation_col, chain_col = st.columns(3)
+with log_col:
+    with st.popover("Protocol log", width="stretch"):
         log_tools, _spacer = st.columns([0.18, 0.82])
         log_tools.button(
             "Clear",
@@ -583,6 +602,8 @@ with right:
                 unsafe_allow_html=True,
             )
 
+with validation_col, st.popover("Validation", width="stretch"):
+    st.button("Run validation", key="validation_btn", on_click=_safe_action, args=(_run_validation,))
     result = st.session_state.validation_result
     if result is not None:
         with st.container(border=True):
@@ -630,7 +651,7 @@ with right:
                 )
             st.caption("Deterministic software mocks only; these are not physical-device measurements or clinical detection results.")
 
-if st.session_state.show_signal_chain:
+with chain_col, st.popover("Signal chain", width="stretch"):
     with st.container(border=True):
         st.markdown('<div class="section-label">SIGNAL CHAIN / SYSTEM ARCHITECTURE</div>', unsafe_allow_html=True)
         st.markdown(

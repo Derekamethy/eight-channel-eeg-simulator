@@ -189,7 +189,7 @@ html, body {{ margin:0; padding:0; background:#0d1722; color:#dce6ee; overflow:h
           padding:3px 7px; border-radius:5px; border:1px solid #6f5934;
           background:#32291c; color:#ffd27d; font-size:10px; font-weight:700; white-space:nowrap; }}
 .event.active {{ display:block; }}
-svg {{ width:100%; height:{MONITOR_SVG_HEIGHT_PX}px; display:block; background:#0d1722; }}
+svg {{ width:100%; height:{MONITOR_SVG_HEIGHT_PX}px; height:calc(100vh - 30px); display:block; background:#0d1722; }}
 .bottom {{ display:flex; align-items:center; gap:10px; height:30px; padding:2px 8px 0;
            color:#b7d8e8; font-size:11px; font-weight:700; }}
 .track {{ flex:1; height:5px; background:#1b2b36; border-radius:999px; overflow:hidden; }}

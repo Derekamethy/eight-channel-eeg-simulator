@@ -46,6 +46,7 @@ class WebLiveMonitorTests(unittest.TestCase):
         self.assertIn(f"height:{MONITOR_SVG_HEIGHT_PX}px", html)
         self.assertEqual(MONITOR_IFRAME_HEIGHT_PX, 468)
         self.assertNotIn("height:auto", html)
+        self.assertIn("height:calc(100vh - 30px)", html)
         self.assertIn("overlay-title", html)
         self.assertNotIn('<div class="top">', html)
 

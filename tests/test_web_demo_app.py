@@ -23,6 +23,31 @@ class WebDemoAppTests(unittest.TestCase):
         self.assertIsNotNone(app.get_by_key("start_btn"))
         self.assertIsNotNone(app.get_by_key("validation_btn"))
 
+    def test_compact_controls_preserve_channel_editing_and_guard(self) -> None:
+        from eeg_simulator.fault_conditions import ContactState
+        from eeg_simulator.synthetic_eeg import ACTIVE_CHANNELS
+
+        app = self.make_app()
+        for channel in ACTIVE_CHANNELS:
+            app.get_by_key(f"condition_{channel}").select(ContactState.VERY_HIGH)
+        app.run()
+        for channel in ACTIVE_CHANNELS:
+            self.assertEqual(app.session_state[f"condition_{channel}"], ContactState.VERY_HIGH)
+            app.get_by_key(f"active_{channel}").uncheck().run()
+        self.assertTrue(app.session_state["active_O2"])
+        app.get_by_key("reset_conditions_btn").click().run()
+        for channel in ACTIVE_CHANNELS:
+            self.assertEqual(app.session_state[f"condition_{channel}"], ContactState.NORMAL)
+        self.assertEqual(list(app.exception), [])
+
+    def test_secondary_content_is_in_popovers_and_playback_has_help(self) -> None:
+        app = self.make_app()
+        self.assertEqual([p.proto.popover.label for p in app.get("popover")],
+                         ["Protocol log", "Validation", "Signal chain"])
+        for key, help_text in (("start_btn", "Start"), ("pause_btn", "Pause"),
+                               ("stop_btn", "Stop"), ("reset_btn", "Reset")):
+            self.assertEqual(app.get_by_key(key).help, help_text)
+
     def test_connect_then_start_runs_without_exception(self) -> None:
         app = self.make_app()
         app.get_by_key("connect_btn").click().run(timeout=20)
