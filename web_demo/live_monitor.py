@@ -84,7 +84,7 @@ def build_live_monitor_html(
     """
 
     width = 1200.0
-    height = 610.0
+    height = 500.0
     left = 88.0
     right = 18.0
     top = 24.0

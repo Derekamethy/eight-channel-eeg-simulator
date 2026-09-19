@@ -362,6 +362,57 @@ with left:
         )
 
     with st.container(border=True):
+        st.markdown('<div class="section-label">PLAYBACK CONFIGURATION</div>', unsafe_allow_html=True)
+        st.select_slider(
+            "Amplitude scale",
+            options=(0.25, 0.5, 1.0, 2.0),
+            key="amplitude_scale",
+            disabled=editing_disabled,
+            format_func=lambda value: f"{value:g}×",
+        )
+        st.checkbox(
+            "Loop playback",
+            key="loop_playback",
+            disabled=editing_disabled,
+        )
+        p1, p2 = st.columns(2)
+        p1.button(
+            "START",
+            key="start_btn",
+            type="primary",
+            width="stretch",
+            disabled=not status.connected or status.state is DeviceState.RUNNING,
+            on_click=_safe_action,
+            args=(_start_playback,),
+        )
+        p2.button(
+            "PAUSE",
+            key="pause_btn",
+            width="stretch",
+            disabled=status.state is not DeviceState.RUNNING,
+            on_click=_safe_action,
+            args=(controller.pause,),
+        )
+        p3, p4 = st.columns(2)
+        p3.button(
+            "STOP",
+            key="stop_btn",
+            width="stretch",
+            disabled=status.state not in (DeviceState.RUNNING, DeviceState.PAUSED),
+            on_click=_safe_action,
+            args=(controller.stop,),
+        )
+        p4.button(
+            "RESET",
+            key="reset_btn",
+            width="stretch",
+            disabled=not status.connected,
+            on_click=_safe_action,
+            args=(controller.reset,),
+        )
+
+
+    with st.container(border=True):
         st.markdown('<div class="section-label">EEG SOURCE</div>', unsafe_allow_html=True)
         st.markdown(
             """
@@ -420,55 +471,6 @@ with left:
         )
         st.caption("Software preview only; physical impedance and lead-off hardware are not implemented.")
 
-    with st.container(border=True):
-        st.markdown('<div class="section-label">PLAYBACK CONFIGURATION</div>', unsafe_allow_html=True)
-        st.select_slider(
-            "Amplitude scale",
-            options=(0.25, 0.5, 1.0, 2.0),
-            key="amplitude_scale",
-            disabled=editing_disabled,
-            format_func=lambda value: f"{value:g}×",
-        )
-        st.checkbox(
-            "Loop playback",
-            key="loop_playback",
-            disabled=editing_disabled,
-        )
-        p1, p2 = st.columns(2)
-        p1.button(
-            "START",
-            key="start_btn",
-            type="primary",
-            width="stretch",
-            disabled=not status.connected or status.state is DeviceState.RUNNING,
-            on_click=_safe_action,
-            args=(_start_playback,),
-        )
-        p2.button(
-            "PAUSE",
-            key="pause_btn",
-            width="stretch",
-            disabled=status.state is not DeviceState.RUNNING,
-            on_click=_safe_action,
-            args=(controller.pause,),
-        )
-        p3, p4 = st.columns(2)
-        p3.button(
-            "STOP",
-            key="stop_btn",
-            width="stretch",
-            disabled=status.state not in (DeviceState.RUNNING, DeviceState.PAUSED),
-            on_click=_safe_action,
-            args=(controller.stop,),
-        )
-        p4.button(
-            "RESET",
-            key="reset_btn",
-            width="stretch",
-            disabled=not status.connected,
-            on_click=_safe_action,
-            args=(controller.reset,),
-        )
 
     a1, a2 = st.columns(2)
     a1.button(
@@ -518,7 +520,7 @@ with right:
                 loop=st.session_state.loop_playback,
                 state_label=controller.status.state.value,
             ),
-            height=690,
+            height=545,
             scrolling=False,
         )
 
