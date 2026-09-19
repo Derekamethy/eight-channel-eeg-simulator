@@ -6,7 +6,6 @@ from eeg_simulator.fault_conditions import ContactState
 from web_demo.console_logic import build_demo_waveform
 from web_demo.live_monitor import (
     MONITOR_IFRAME_HEIGHT_PX,
-    MONITOR_SVG_HEIGHT_PX,
     build_live_monitor_html,
 )
 
@@ -33,7 +32,7 @@ class WebLiveMonitorTests(unittest.TestCase):
         self.assertIn("requestAnimationFrame(draw)", html)
         self.assertNotIn("plotly", html.lower())
 
-    def test_monitor_uses_explicit_matched_heights(self) -> None:
+    def test_monitor_reserves_footer_and_keeps_labels_outside_scaled_svg(self) -> None:
         html = build_live_monitor_html(
             self.demo,
             self.demo.channel_names,
@@ -43,10 +42,14 @@ class WebLiveMonitorTests(unittest.TestCase):
             loop=False,
             state_label="READY",
         )
-        self.assertIn(f"height:{MONITOR_SVG_HEIGHT_PX}px", html)
         self.assertEqual(MONITOR_IFRAME_HEIGHT_PX, 468)
         self.assertNotIn("height:auto", html)
-        self.assertIn("height:calc(100vh - 30px)", html)
+        self.assertIn("grid-template-rows:minmax(0, 1fr) 32px", html)
+        svg = html.split("<svg", 1)[1].split("</svg>", 1)[0]
+        self.assertNotIn("<text", svg)
+        self.assertEqual(html.count('class="channel-label"'), 8)
+        self.assertEqual(html.count('class="range-label"'), 8)
+        self.assertEqual(html.count('class="tick-label"'), 7)
         self.assertIn("overlay-title", html)
         self.assertNotIn('<div class="top">', html)
 
@@ -80,7 +83,7 @@ class WebLiveMonitorTests(unittest.TestCase):
         self.assertIn('stroke-dasharray="5 4"', html)
         self.assertIn('opacity="0.16"', html)
         for channel in self.demo.channel_names:
-            self.assertIn(f">{channel}</text>", html)
+            self.assertIn(f">{channel}</span>", html)
 
 
 if __name__ == "__main__":
