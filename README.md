@@ -26,7 +26,7 @@ The browser console provides:
 - automatic playback position driven by the maintained monotonic `PlaybackClock`, with a browser-side `requestAnimationFrame` cursor that moves without rebuilding the EEG waveform;
 - a compact fixed **eight-lane EEG monitor** with the 20–30 s synthetic event shaded directly on the traces;
 - independent Normal / Moderate / High Z / Very High Z / Lead Off conditions for all eight channels plus global 50/60 Hz interference;
-- a compact two-row eight-channel **target µV → 16-bit DAC code** strip at the current playback position;
+- an always-visible eight-channel **target µV → 16-bit DAC code** side rail beside the waveform;
 - a collapsible protocol log showing the same mock command flow used by the desktop application;
 - the three-level deterministic software-reference validation and an explicit implemented / partial / future / external system boundary.
 
@@ -44,7 +44,7 @@ For Streamlit Community Cloud, use `web_demo/app.py` as the app entry point. The
 | Capability | Implemented behaviour |
 | --- | --- |
 | EEG source | Deterministic 8-channel synthetic waveform or NPZ/optional EDF input |
-| Browser demo | Desktop-console-style playback, enlarged eight-lane monitor, compact DAC strip and collapsible protocol log |
+| Browser demo | Desktop-console-style playback, edge-to-edge eight-lane monitor, fixed DAC side rail and collapsible protocol log |
 | Default demo | 60 s at 256 Hz, 15,360 samples per channel |
 | Channels | F3, F4, C3, C4, T3, T4, O1, O2 |
 | Playback | Start, pause, stop, loop and monotonic-clock sample tracking |

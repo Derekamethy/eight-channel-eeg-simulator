@@ -44,8 +44,10 @@ class WebLiveMonitorTests(unittest.TestCase):
             state_label="READY",
         )
         self.assertIn(f"height:{MONITOR_SVG_HEIGHT_PX}px", html)
-        self.assertEqual(MONITOR_IFRAME_HEIGHT_PX, 575)
+        self.assertEqual(MONITOR_IFRAME_HEIGHT_PX, 468)
         self.assertNotIn("height:auto", html)
+        self.assertIn("overlay-title", html)
+        self.assertNotIn('<div class="top">', html)
 
     def test_loop_and_initial_position_are_encoded_for_front_end(self) -> None:
         html = build_live_monitor_html(

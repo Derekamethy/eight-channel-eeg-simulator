@@ -136,18 +136,18 @@ def _inject_console_css() -> None:
         }
         .position-fill { height:100%; background:#4fa7c9; }
         .dac-strip {
-            display:grid; grid-template-columns:repeat(4, minmax(0,1fr));
-            gap:6px; margin-top:4px;
+            display:grid; grid-template-columns:1fr;
+            gap:5px; margin-top:4px;
         }
         .dac-chip {
-            display:grid; grid-template-columns:auto 1fr auto; align-items:center;
-            gap:6px; padding:6px 8px; border:1px solid #2a3e4b;
+            display:grid; grid-template-columns:28px 1fr; align-items:center;
+            gap:2px 5px; padding:6px 7px; border:1px solid #2a3e4b;
             background:#0d1722; border-radius:5px; min-width:0;
-            font-size:0.72rem; font-variant-numeric:tabular-nums;
+            font-size:0.70rem; font-variant-numeric:tabular-nums;
         }
         .dac-chip b { color:#7ad7ff; }
         .dac-chip span { color:#c9d7de; text-align:right; white-space:nowrap; }
-        .dac-chip code { color:#91a9b7; font-family:Consolas,monospace; }
+        .dac-chip code { grid-column:2; color:#91a9b7; font-family:Consolas,monospace; text-align:right; }
         .dac-chip.inactive { opacity:0.38; }
         .log-box {
             max-height:190px; overflow:auto; background:#091119; border:1px solid #233541;
@@ -196,7 +196,6 @@ def _inject_console_css() -> None:
         [data-testid="stCaptionContainer"] { color:#7f96a3; }
         @media (max-width: 1050px) {
             .chain { grid-template-columns:1fr 1fr; }
-            .dac-strip { grid-template-columns:repeat(2, minmax(0,1fr)); }
             .console-title { font-size:1.5rem; }
         }
         </style>
@@ -322,7 +321,7 @@ status = controller.status
 running = status.state is DeviceState.RUNNING
 editing_disabled = running
 
-left, right = st.columns([0.24, 0.76], gap="medium")
+left, right = st.columns([0.23, 0.77], gap="medium")
 
 with left:
     with st.container(border=True):
@@ -339,7 +338,7 @@ with left:
         st.markdown(
             f"""
             <div class="device-line">
-              <span class="device-name">Mock EEG Simulator</span>
+              <span class="device-name">Mock EEG</span>
               <span class="state-pill {state_class}">{status.state.value}</span>
             </div>
             """,
@@ -381,7 +380,7 @@ with left:
 
         p1, p2, p3, p4 = st.columns(4)
         p1.button(
-            "START",
+            "▶",
             key="start_btn",
             type="primary",
             width="stretch",
@@ -390,7 +389,7 @@ with left:
             args=(_start_playback,),
         )
         p2.button(
-            "PAUSE",
+            "Ⅱ",
             key="pause_btn",
             width="stretch",
             disabled=status.state is not DeviceState.RUNNING,
@@ -398,7 +397,7 @@ with left:
             args=(controller.pause,),
         )
         p3.button(
-            "STOP",
+            "■",
             key="stop_btn",
             width="stretch",
             disabled=status.state not in (DeviceState.RUNNING, DeviceState.PAUSED),
@@ -406,7 +405,7 @@ with left:
             args=(controller.stop,),
         )
         p4.button(
-            "RESET",
+            "↺",
             key="reset_btn",
             width="stretch",
             disabled=not status.connected,
@@ -437,32 +436,29 @@ with left:
             on_click=_reset_conditions,
         )
 
-        for start in range(0, len(ACTIVE_CHANNELS), 2):
-            pair = st.columns(2)
-            for offset, channel in enumerate(ACTIVE_CHANNELS[start:start + 2]):
-                with pair[offset]:
-                    cell = st.columns([0.34, 0.66])
-                    cell[0].checkbox(
-                        channel,
-                        key=f"active_{channel}",
-                        disabled=editing_disabled,
-                        on_change=_ensure_active_channel,
-                        args=(channel,),
-                    )
-                    cell[1].selectbox(
-                        f"{channel} condition",
-                        list(ContactState),
-                        key=f"condition_{channel}",
-                        disabled=editing_disabled,
-                        format_func=lambda value: {
-                            ContactState.NORMAL: "Normal",
-                            ContactState.MODERATE: "20 kΩ",
-                            ContactState.HIGH: "50 kΩ",
-                            ContactState.VERY_HIGH: "100 kΩ",
-                            ContactState.LEAD_OFF: "Off",
-                        }[value],
-                        label_visibility="collapsed",
-                    )
+        for channel in ACTIVE_CHANNELS:
+            row = st.columns([0.30, 0.70])
+            row[0].checkbox(
+                channel,
+                key=f"active_{channel}",
+                disabled=editing_disabled,
+                on_change=_ensure_active_channel,
+                args=(channel,),
+            )
+            row[1].selectbox(
+                f"{channel} condition",
+                list(ContactState),
+                key=f"condition_{channel}",
+                disabled=editing_disabled,
+                format_func=lambda value: {
+                    ContactState.NORMAL: "Normal",
+                    ContactState.MODERATE: "20 kΩ",
+                    ContactState.HIGH: "50 kΩ",
+                    ContactState.VERY_HIGH: "100 kΩ",
+                    ContactState.LEAD_OFF: "Off",
+                }[value],
+                label_visibility="collapsed",
+            )
 
         artifact = st.columns([0.30, 0.70])
         artifact[0].markdown(
@@ -508,60 +504,64 @@ monitor_running = controller.status.state is DeviceState.RUNNING
 telemetry_every = 0.5 if monitor_running else None
 
 with right:
-    with st.container(border=True):
-        if demo.abnormal_summary:
-            st.markdown(
-                '<div class="condition-banner">SIMULATED CONDITIONS · '
-                + " · ".join(escape(item) for item in demo.abnormal_summary)
-                + ' · software preview</div>',
-                unsafe_allow_html=True,
-            )
-        components.html(
-            build_live_monitor_html(
-                demo,
-                active_channels,
-                contact_states,
-                initial_position_seconds=monitor_snapshot.position_seconds,
-                running=monitor_running,
-                loop=st.session_state.loop_playback,
-                state_label=controller.status.state.value,
-            ),
-            height=MONITOR_IFRAME_HEIGHT_PX,
-            scrolling=False,
-        )
+    monitor_col, dac_col = st.columns([0.82, 0.18], gap="small")
 
-    @st.fragment(run_every=telemetry_every)
-    def render_live_telemetry() -> None:
-        snapshot = controller.snapshot()
-        if snapshot.completed:
-            st.rerun()
-
-        sample_index = min(
-            max(snapshot.sample_index, 0),
-            demo.samples_uv.shape[1] - 1,
-        )
-        values = demo.samples_uv[:, sample_index]
-        codes = demo.dac_codes[:, sample_index]
-
-        chips = []
-        for index, channel in enumerate(demo.channel_names):
-            enabled = channel in active_channels
-            css_class = "dac-chip" if enabled else "dac-chip inactive"
-            value_text = f"{values[index]:+.1f} µV" if enabled else "--"
-            code_text = str(int(codes[index])) if enabled else "--"
-            chips.append(
-                f'<div class="{css_class}"><b>{channel}</b>'
-                f'<span>{value_text}</span><code>{code_text}</code></div>'
-            )
-
+    with monitor_col:
         with st.container(border=True):
-            st.markdown(
-                '<div class="section-label">DAC · µV → 16-BIT CODE</div>'
-                '<div class="dac-strip">' + "".join(chips) + "</div>",
-                unsafe_allow_html=True,
+            if demo.abnormal_summary:
+                st.markdown(
+                    '<div class="condition-banner">SIMULATED · '
+                    + " · ".join(escape(item) for item in demo.abnormal_summary)
+                    + "</div>",
+                    unsafe_allow_html=True,
+                )
+            components.html(
+                build_live_monitor_html(
+                    demo,
+                    active_channels,
+                    contact_states,
+                    initial_position_seconds=monitor_snapshot.position_seconds,
+                    running=monitor_running,
+                    loop=st.session_state.loop_playback,
+                    state_label=controller.status.state.value,
+                ),
+                height=MONITOR_IFRAME_HEIGHT_PX,
+                scrolling=False,
             )
 
-    render_live_telemetry()
+    with dac_col:
+        @st.fragment(run_every=telemetry_every)
+        def render_live_dac() -> None:
+            snapshot = controller.snapshot()
+            if snapshot.completed:
+                st.rerun()
+
+            sample_index = min(
+                max(snapshot.sample_index, 0),
+                demo.samples_uv.shape[1] - 1,
+            )
+            values = demo.samples_uv[:, sample_index]
+            codes = demo.dac_codes[:, sample_index]
+
+            chips = []
+            for index, channel in enumerate(demo.channel_names):
+                enabled = channel in active_channels
+                css_class = "dac-chip" if enabled else "dac-chip inactive"
+                value_text = f"{values[index]:+.1f} µV" if enabled else "--"
+                code_text = str(int(codes[index])) if enabled else "--"
+                chips.append(
+                    f'<div class="{css_class}"><b>{channel}</b>'
+                    f'<span>{value_text}</span><code>{code_text}</code></div>'
+                )
+
+            with st.container(border=True):
+                st.markdown(
+                    '<div class="section-label">DAC</div>'
+                    '<div class="dac-strip">' + "".join(chips) + "</div>",
+                    unsafe_allow_html=True,
+                )
+
+        render_live_dac()
 
     with st.expander("Protocol log", expanded=False):
         log_tools, _spacer = st.columns([0.18, 0.82])

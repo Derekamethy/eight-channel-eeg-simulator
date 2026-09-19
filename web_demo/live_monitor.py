@@ -13,8 +13,8 @@ from eeg_simulator.fault_conditions import ContactState
 from web_demo.console_logic import DemoWaveform
 
 
-MONITOR_SVG_HEIGHT_PX = 500
-MONITOR_IFRAME_HEIGHT_PX = 575
+MONITOR_SVG_HEIGHT_PX = 430
+MONITOR_IFRAME_HEIGHT_PX = 468
 
 
 CHANNEL_COLOURS = {
@@ -88,15 +88,15 @@ def build_live_monitor_html(
     """
 
     width = 1200.0
-    height = 560.0
+    height = 430.0
     left = 88.0
     right = 18.0
-    top = 18.0
-    bottom = 44.0
+    top = 24.0
+    bottom = 28.0
     plot_width = width - left - right
     plot_height = height - top - bottom
     lane_height = plot_height / len(demo.channel_names)
-    amplitude_px = lane_height * 0.42
+    amplitude_px = lane_height * 0.44
     active = set(active_channels)
 
     ticks = []
@@ -179,29 +179,29 @@ def build_live_monitor_html(
 <style>
 html, body {{ margin:0; padding:0; background:#0d1722; color:#dce6ee; overflow:hidden; }}
 * {{ box-sizing:border-box; }}
-.shell {{ width:100%; background:#0d1722; font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif; }}
-.top {{ display:flex; justify-content:space-between; align-items:center; padding:4px 6px 8px; }}
-.title {{ font-size:12px; font-weight:800; letter-spacing:.08em; color:#b9cfda; }}
-.pill {{ padding:3px 9px; border-radius:999px; border:1px solid #415766; background:#15222d;
-         color:#b7c8d2; font-size:11px; font-weight:800; }}
-.event {{ min-height:20px; margin:0 4px 6px; padding:4px 8px; border-radius:5px;
-          border:1px solid transparent; font-size:11px; font-weight:700; color:transparent; }}
-.event.active {{ border-color:#6f5934; background:#32291c; color:#ffd27d; }}
+.shell {{ position:relative; width:100%; background:#0d1722; font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif; }}
+.overlay-title {{ position:absolute; z-index:3; top:4px; left:8px;
+                  font-size:11px; font-weight:800; letter-spacing:.08em; color:#b9cfda; }}
+.pill {{ position:absolute; z-index:3; top:3px; right:8px;
+         padding:2px 8px; border-radius:999px; border:1px solid #415766; background:#15222d;
+         color:#b7c8d2; font-size:10px; font-weight:800; }}
+.event {{ display:none; position:absolute; z-index:4; top:24px; left:50%; transform:translateX(-50%);
+          padding:3px 7px; border-radius:5px; border:1px solid #6f5934;
+          background:#32291c; color:#ffd27d; font-size:10px; font-weight:700; white-space:nowrap; }}
+.event.active {{ display:block; }}
 svg {{ width:100%; height:{MONITOR_SVG_HEIGHT_PX}px; display:block; background:#0d1722; }}
-.bottom {{ display:flex; align-items:center; gap:10px; padding:4px 8px 0; color:#b7d8e8;
-           font-size:11px; font-weight:700; }}
+.bottom {{ display:flex; align-items:center; gap:10px; height:30px; padding:2px 8px 0;
+           color:#b7d8e8; font-size:11px; font-weight:700; }}
 .track {{ flex:1; height:5px; background:#1b2b36; border-radius:999px; overflow:hidden; }}
 .fill {{ height:100%; width:0; background:#4fa7c9; }}
 </style>
 </head>
 <body>
 <div class="shell">
-  <div class="top">
-    <div class="title">WAVEFORM MONITOR · SIMULATED EEG OUTPUT (µV)</div>
-    <div class="pill">{state_text}</div>
-  </div>
+  <div class="overlay-title">WAVEFORM MONITOR · EEG (µV)</div>
+  <div class="pill">{state_text}</div>
   <div id="eventBadge" class="event">SYNTHETIC DEMO EVENT</div>
-  <svg viewBox="0 0 {width:.0f} {height:.0f}" role="img" aria-label="Eight-channel EEG waveform monitor">
+  <svg viewBox="0 0 {width:.0f} {height:.0f}" preserveAspectRatio="none" role="img" aria-label="Eight-channel EEG waveform monitor">
     <rect x="0" y="0" width="{width:.0f}" height="{height:.0f}" fill="#0d1722"/>
     {''.join(ticks)}
     {''.join(events)}
