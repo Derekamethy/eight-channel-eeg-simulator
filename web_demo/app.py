@@ -74,14 +74,14 @@ def _inject_console_css() -> None:
         }
         .compact-source b { color:#dce6ee; font-weight:700; }
         .console-header {
-            display:flex; align-items:flex-start; justify-content:space-between;
-            gap:16px; margin: 0 0 10px 0;
+            display:flex; align-items:center; justify-content:space-between;
+            gap:12px; margin:0 0 6px 0;
         }
         .console-title {
-            font-size: 2rem; line-height:1.05; font-weight:800; color:#f2f8fb;
+            font-size:1.72rem; line-height:1.0; font-weight:800; color:#f2f8fb;
             letter-spacing:-0.02em;
         }
-        .console-subtitle { color:var(--muted); margin-top:5px; font-size:0.92rem; }
+        .console-subtitle { display:none; }
         .mode-badge {
             border:1px solid #3d6277; background:#1a2d3a; color:#78dbff;
             border-radius:6px; padding:7px 11px; font-weight:800; font-size:0.78rem;
@@ -135,20 +135,22 @@ def _inject_console_css() -> None:
             height:5px; flex:1; background:#1b2b36; border-radius:99px; overflow:hidden;
         }
         .position-fill { height:100%; background:#4fa7c9; }
-        .dac-table {
-            width:100%; border-collapse:collapse; font-size:0.76rem; line-height:1.2;
+        .dac-strip {
+            display:grid; grid-template-columns:repeat(4, minmax(0,1fr));
+            gap:6px; margin-top:4px;
         }
-        .dac-table th {
-            text-align:left; color:#9fb6c3; background:#172733; padding:5px 7px;
-            border-bottom:1px solid #2d424f; font-weight:700;
+        .dac-chip {
+            display:grid; grid-template-columns:auto 1fr auto; align-items:center;
+            gap:6px; padding:6px 8px; border:1px solid #2a3e4b;
+            background:#0d1722; border-radius:5px; min-width:0;
+            font-size:0.72rem; font-variant-numeric:tabular-nums;
         }
-        .dac-table td {
-            padding:3px 7px; border-bottom:1px solid rgba(57,78,91,0.45);
-            color:#dce6ee; font-variant-numeric:tabular-nums;
-        }
-        .dac-table tr.inactive td { color:#647986; }
+        .dac-chip b { color:#7ad7ff; }
+        .dac-chip span { color:#c9d7de; text-align:right; white-space:nowrap; }
+        .dac-chip code { color:#91a9b7; font-family:Consolas,monospace; }
+        .dac-chip.inactive { opacity:0.38; }
         .log-box {
-            height:190px; overflow:auto; background:#091119; border:1px solid #233541;
+            max-height:190px; overflow:auto; background:#091119; border:1px solid #233541;
             border-radius:5px; padding:8px; color:#b9d3df; font-size:0.72rem;
             line-height:1.45; font-family:Consolas, "SFMono-Regular", monospace;
             white-space:pre-wrap;
@@ -194,7 +196,8 @@ def _inject_console_css() -> None:
         [data-testid="stCaptionContainer"] { color:#7f96a3; }
         @media (max-width: 1050px) {
             .chain { grid-template-columns:1fr 1fr; }
-            .console-title { font-size:1.65rem; }
+            .dac-strip { grid-template-columns:repeat(2, minmax(0,1fr)); }
+            .console-title { font-size:1.5rem; }
         }
         </style>
         """,
@@ -307,9 +310,7 @@ st.markdown(
     <div class="console-header">
       <div>
         <div class="console-title">8-Channel EEG Simulator</div>
-        <div class="console-subtitle">
-          Browser control console · synthetic engineering data · shared Python simulator core
-        </div>
+        <div class="console-subtitle"></div>
       </div>
       <div class="mode-badge">MOCK · NOT CLINICAL</div>
     </div>
@@ -321,7 +322,7 @@ status = controller.status
 running = status.state is DeviceState.RUNNING
 editing_disabled = running
 
-left, right = st.columns([0.27, 0.73], gap="medium")
+left, right = st.columns([0.24, 0.76], gap="medium")
 
 with left:
     with st.container(border=True):
@@ -369,11 +370,11 @@ with left:
             options=(0.25, 0.5, 1.0, 2.0),
             key="amplitude_scale",
             disabled=editing_disabled,
-            format_func=lambda value: f"Amplitude {value:g}×",
+            format_func=lambda value: f"{value:g}×",
             label_visibility="collapsed",
         )
         cfg2.checkbox(
-            "Loop playback",
+            "Loop",
             key="loop_playback",
             disabled=editing_disabled,
         )
@@ -416,8 +417,7 @@ with left:
         st.markdown(
             """
             <div class="compact-source">
-              <b>Synthetic demo</b> · 256 Hz · 60.0 s · 15,360 samples/ch ·
-              8 channels · REF Cz · GND Pz · labelled event 20–30 s
+              <b>Synthetic</b> · 256 Hz · 60 s · 8 ch · 15,360/ch
             </div>
             """,
             unsafe_allow_html=True,
@@ -426,7 +426,7 @@ with left:
     with st.container(border=True):
         title_col, reset_col = st.columns([0.74, 0.26])
         title_col.markdown(
-            '<div class="section-label">CHANNELS / ELECTRODE CONDITIONS</div>',
+            '<div class="section-label">CHANNELS / CONDITIONS</div>',
             unsafe_allow_html=True,
         )
         reset_col.button(
@@ -454,7 +454,13 @@ with left:
                         list(ContactState),
                         key=f"condition_{channel}",
                         disabled=editing_disabled,
-                        format_func=lambda value: value.short_label,
+                        format_func=lambda value: {
+                            ContactState.NORMAL: "Normal",
+                            ContactState.MODERATE: "20 kΩ",
+                            ContactState.HIGH: "50 kΩ",
+                            ContactState.VERY_HIGH: "100 kΩ",
+                            ContactState.LEAD_OFF: "Off",
+                        }[value],
                         label_visibility="collapsed",
                     )
 
@@ -472,9 +478,9 @@ with left:
             label_visibility="collapsed",
         )
 
-        tools1, tools2, tools3 = st.columns(3)
+        tools1, tools2 = st.columns(2)
         tools1.button(
-            "SIGNAL CHAIN",
+            "CHAIN",
             key="signal_chain_btn",
             width="stretch",
             on_click=_toggle_signal_chain,
@@ -485,13 +491,6 @@ with left:
             width="stretch",
             on_click=_safe_action,
             args=(_run_validation,),
-        )
-        tools3.button(
-            "CLEAR LOG",
-            key="clear_log_btn",
-            width="stretch",
-            disabled=not controller.logs,
-            on_click=controller.clear_logs,
         )
 
     if st.session_state.control_error:
@@ -527,7 +526,7 @@ with right:
                 loop=st.session_state.loop_playback,
                 state_label=controller.status.state.value,
             ),
-            height=415,
+            height=620,
             scrolling=False,
         )
 
@@ -541,59 +540,48 @@ with right:
             max(snapshot.sample_index, 0),
             demo.samples_uv.shape[1] - 1,
         )
+        values = demo.samples_uv[:, sample_index]
+        codes = demo.dac_codes[:, sample_index]
 
-        lower_left, lower_right = st.columns([0.46, 0.54], gap="medium")
-        with lower_left:
-            with st.container(border=True):
-                st.markdown(
-                    '<div class="section-label">VIRTUAL DAC MAPPING · SOFTWARE MODEL ONLY</div>',
-                    unsafe_allow_html=True,
-                )
-                values = demo.samples_uv[:, sample_index]
-                codes = demo.dac_codes[:, sample_index]
-                rows = []
-                for index, channel in enumerate(demo.channel_names):
-                    enabled = channel in active_channels
-                    row_class = "" if enabled else ' class="inactive"'
-                    value_text = f"{values[index]:+7.2f}" if enabled else "--"
-                    code_text = str(int(codes[index])) if enabled else "--"
-                    rows.append(
-                        f"<tr{row_class}><td>{channel}</td><td>{value_text}</td><td>{code_text}</td></tr>"
-                    )
-                st.markdown(
-                    """
-                    <table class="dac-table">
-                      <thead><tr><th>Channel</th><th>Target µV</th><th>16-bit code</th></tr></thead>
-                      <tbody>
-                    """
-                    + "".join(rows)
-                    + "</tbody></table>",
-                    unsafe_allow_html=True,
-                )
-                st.markdown(
-                    '<div class="boundary-note">±200 µV digital target range · midscale = 0 µV · not a measured analogue voltage</div>',
-                    unsafe_allow_html=True,
-                )
+        chips = []
+        for index, channel in enumerate(demo.channel_names):
+            enabled = channel in active_channels
+            css_class = "dac-chip" if enabled else "dac-chip inactive"
+            value_text = f"{values[index]:+.1f} µV" if enabled else "--"
+            code_text = str(int(codes[index])) if enabled else "--"
+            chips.append(
+                f'<div class="{css_class}"><b>{channel}</b>'
+                f'<span>{value_text}</span><code>{code_text}</code></div>'
+            )
 
-        with lower_right:
-            with st.container(border=True):
-                st.markdown(
-                    '<div class="section-label">COMMUNICATION LOG · DESKTOP ↔ MOCK DEVICE</div>',
-                    unsafe_allow_html=True,
-                )
-                if controller.logs:
-                    log_text = "\n".join(controller.logs[-15:])
-                    st.markdown(
-                        '<div class="log-box">' + escape(log_text) + "</div>",
-                        unsafe_allow_html=True,
-                    )
-                else:
-                    st.markdown(
-                        '<div class="log-box empty-log">Protocol traffic appears here after Connect...</div>',
-                        unsafe_allow_html=True,
-                    )
+        with st.container(border=True):
+            st.markdown(
+                '<div class="section-label">DAC · µV → 16-BIT CODE</div>'
+                '<div class="dac-strip">' + "".join(chips) + "</div>",
+                unsafe_allow_html=True,
+            )
 
     render_live_telemetry()
+
+    with st.expander("Protocol log", expanded=False):
+        log_tools, _spacer = st.columns([0.18, 0.82])
+        log_tools.button(
+            "Clear",
+            key="clear_log_btn",
+            disabled=not controller.logs,
+            on_click=controller.clear_logs,
+        )
+        if controller.logs:
+            log_text = "\n".join(controller.logs[-20:])
+            st.markdown(
+                '<div class="log-box">' + escape(log_text) + "</div>",
+                unsafe_allow_html=True,
+            )
+        else:
+            st.markdown(
+                '<div class="log-box empty-log">No protocol traffic yet.</div>',
+                unsafe_allow_html=True,
+            )
 
     result = st.session_state.validation_result
     if result is not None:
@@ -661,7 +649,3 @@ if st.session_state.show_signal_chain:
         )
         st.caption("Known input → controlled signal path → acquisition → automated verification. The browser console intentionally keeps the physical-hardware boundary explicit.")
 
-st.markdown(
-    '<div class="boundary-note">Future MCU / DAC / analogue stage / acquisition interface are not implemented. This browser demo exercises the maintained software architecture and mock device only.</div>',
-    unsafe_allow_html=True,
-)

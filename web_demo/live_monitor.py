@@ -74,7 +74,7 @@ def build_live_monitor_html(
     running: bool,
     loop: bool,
     state_label: str,
-    render_hz: float = 32.0,
+    render_hz: float = 48.0,
 ) -> str:
     """Render the EEG once and animate only the cursor in the browser.
 
@@ -84,15 +84,15 @@ def build_live_monitor_html(
     """
 
     width = 1200.0
-    height = 420.0
+    height = 560.0
     left = 88.0
     right = 18.0
-    top = 24.0
-    bottom = 54.0
+    top = 18.0
+    bottom = 44.0
     plot_width = width - left - right
     plot_height = height - top - bottom
     lane_height = plot_height / len(demo.channel_names)
-    amplitude_px = lane_height * 0.34
+    amplitude_px = lane_height * 0.42
     active = set(active_channels)
 
     ticks = []
@@ -146,15 +146,15 @@ def build_live_monitor_html(
             f'y2="{baseline:.2f}" stroke="rgba(145,170,185,0.10)" stroke-width="1"/>'
         )
         lanes.append(
-            f'<text x="10" y="{baseline + 4:.2f}" fill="{colour}" font-size="13" '
+            f'<text x="10" y="{baseline + 4:.2f}" fill="{colour}" font-size="14" '
             f'font-weight="700">{escape(channel)}</text>'
         )
         lanes.append(
-            f'<text x="48" y="{baseline + 4:.2f}" fill="#718896" font-size="10">'
+            f'<text x="48" y="{baseline + 4:.2f}" fill="#718896" font-size="11">'
             f'±{axis_limit:g}</text>'
         )
         lanes.append(
-            f'<path d="{path}" fill="none" stroke="{colour}" stroke-width="1.45" '
+            f'<path d="{path}" fill="none" stroke="{colour}" stroke-width="1.65" '
             f'opacity="{opacity}" vector-effect="non-scaling-stroke"{dash}/>'
         )
 
@@ -180,10 +180,10 @@ html, body {{ margin:0; padding:0; background:#0d1722; color:#dce6ee; overflow:h
 .title {{ font-size:12px; font-weight:800; letter-spacing:.08em; color:#b9cfda; }}
 .pill {{ padding:3px 9px; border-radius:999px; border:1px solid #415766; background:#15222d;
          color:#b7c8d2; font-size:11px; font-weight:800; }}
-.event {{ min-height:24px; margin:0 4px 6px; padding:4px 8px; border-radius:5px;
+.event {{ min-height:20px; margin:0 4px 6px; padding:4px 8px; border-radius:5px;
           border:1px solid transparent; font-size:11px; font-weight:700; color:transparent; }}
 .event.active {{ border-color:#6f5934; background:#32291c; color:#ffd27d; }}
-svg {{ width:100%; height:330px; display:block; background:#0d1722; }}
+svg {{ width:100%; height:auto; display:block; background:#0d1722; }}
 .bottom {{ display:flex; align-items:center; gap:10px; padding:4px 8px 0; color:#b7d8e8;
            font-size:11px; font-weight:700; }}
 .track {{ flex:1; height:5px; background:#1b2b36; border-radius:999px; overflow:hidden; }}
