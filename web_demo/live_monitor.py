@@ -18,11 +18,11 @@ MONITOR_IFRAME_HEIGHT_PX = 468
 
 
 CHANNEL_COLOURS = {
-    ContactState.NORMAL: "#67d4ff",
-    ContactState.MODERATE: "#a6d8d0",
-    ContactState.HIGH: "#ffc46b",
-    ContactState.VERY_HIGH: "#ffad5c",
-    ContactState.LEAD_OFF: "#ff8d8d",
+    ContactState.NORMAL: "#187c70",
+    ContactState.MODERATE: "#4e9b87",
+    ContactState.HIGH: "#b77a24",
+    ContactState.VERY_HIGH: "#a95c2a",
+    ContactState.LEAD_OFF: "#b84b5b",
 }
 
 
@@ -107,7 +107,7 @@ def build_live_monitor_html(
         x = left + (tick / demo.duration_seconds) * plot_width
         ticks.append(
             f'<line x1="{x:.2f}" y1="{top:.2f}" x2="{x:.2f}" y2="{top + plot_height:.2f}" '
-            'stroke="rgba(145,170,185,0.08)" stroke-width="1"/>'
+            'stroke="rgba(54,118,102,0.12)" stroke-width="1"/>'
         )
         labels.append(
             f'<span class="tick-label" style="left:{x / width * 100:.4f}%;'
@@ -121,7 +121,7 @@ def build_live_monitor_html(
         event_width = (duration / demo.duration_seconds) * plot_width
         events.append(
             f'<rect x="{x:.2f}" y="{top:.2f}" width="{event_width:.2f}" '
-            f'height="{plot_height:.2f}" rx="2" fill="rgba(255,190,90,0.09)">'
+            f'height="{plot_height:.2f}" rx="2" fill="rgba(230,178,71,0.15)">'
             f'<title>{escape(description)}</title></rect>'
         )
 
@@ -148,7 +148,7 @@ def build_live_monitor_html(
         )
         lanes.append(
             f'<line x1="{left:.2f}" y1="{baseline:.2f}" x2="{left + plot_width:.2f}" '
-            f'y2="{baseline:.2f}" stroke="rgba(145,170,185,0.10)" stroke-width="1"/>'
+            f'y2="{baseline:.2f}" stroke="rgba(54,118,102,0.12)" stroke-width="1"/>'
         )
         labels.append(
             f'<span class="channel-label" style="top:{baseline / height * 100:.4f}%;'
@@ -176,20 +176,20 @@ def build_live_monitor_html(
 <head>
 <meta charset="utf-8">
 <style>
-html, body {{ height:100%; margin:0; padding:0; background:#0d1722; color:#dce6ee; overflow:hidden; }}
+html, body {{ height:100%; margin:0; padding:0; background:#f3faf6; color:#183d36; overflow:hidden; }}
 * {{ box-sizing:border-box; }}
-.shell {{ display:grid; grid-template-rows:minmax(0, 1fr) 32px; height:100%; position:relative; width:100%; background:#0d1722; font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif; }}
+.shell {{ display:grid; grid-template-rows:minmax(0, 1fr) 32px; height:100%; position:relative; width:100%; background:#f3faf6; font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif; }}
 .overlay-title {{ position:absolute; z-index:3; top:4px; left:8px;
-                  font-size:11px; font-weight:800; letter-spacing:.08em; color:#b9cfda; }}
+                  font-size:11px; font-weight:800; letter-spacing:.08em; color:#376d62; }}
 .pill {{ position:absolute; z-index:3; top:3px; right:8px;
-         padding:2px 8px; border-radius:999px; border:1px solid #415766; background:#15222d;
-         color:#b7c8d2; font-size:10px; font-weight:800; }}
+         padding:2px 8px; border-radius:999px; border:1px solid #a9d4c6; background:#e4f4ed;
+         color:#276b5b; font-size:10px; font-weight:800; }}
 .event {{ display:none; position:absolute; z-index:4; top:24px; left:50%; transform:translateX(-50%);
           padding:3px 7px; border-radius:5px; border:1px solid #6f5934;
           background:#32291c; color:#ffd27d; font-size:10px; font-weight:700; white-space:nowrap; }}
 .event.active {{ display:block; }}
 .plot {{ position:relative; min-height:0; }}
-svg {{ position:absolute; inset:0; width:100%; height:100%; display:block; background:#0d1722; }}
+svg {{ position:absolute; inset:0; width:100%; height:100%; display:block; background:#f3faf6; }}
 .channel-label, .range-label, .tick-label {{ position:absolute; line-height:1; white-space:nowrap; pointer-events:none; }}
 .channel-label {{ left:0.8333%; transform:translateY(-50%); font-size:13px; font-weight:700; }}
 .range-label {{ left:4%; transform:translateY(-50%); font-size:10px; color:#718896; }}
@@ -197,8 +197,8 @@ svg {{ position:absolute; inset:0; width:100%; height:100%; display:block; backg
 .axis-title {{ position:absolute; bottom:0; left:7.3333%; right:1.5%; text-align:center; font-size:11px; line-height:14px; color:#9db3bf; }}
 .bottom {{ display:flex; align-items:center; gap:10px; min-height:32px; padding:0 8px; white-space:nowrap;
            color:#b7d8e8; font-size:11px; font-weight:700; }}
-.track {{ flex:1; height:5px; background:#1b2b36; border-radius:999px; overflow:hidden; }}
-.fill {{ height:100%; width:0; background:#4fa7c9; }}
+.track {{ flex:1; height:5px; background:#d8ece3; border-radius:999px; overflow:hidden; }}
+.fill {{ height:100%; width:0; background:#43a88d; }}
 </style>
 </head>
 <body>
@@ -208,12 +208,12 @@ svg {{ position:absolute; inset:0; width:100%; height:100%; display:block; backg
   <div id="eventBadge" class="event">SYNTHETIC DEMO EVENT</div>
   <div class="plot">
   <svg viewBox="0 0 {width:.0f} {height:.0f}" preserveAspectRatio="none" role="img" aria-label="Eight-channel EEG waveform monitor">
-    <rect x="0" y="0" width="{width:.0f}" height="{height:.0f}" fill="#0d1722"/>
+    <rect x="0" y="0" width="{width:.0f}" height="{height:.0f}" fill="#f3faf6"/>
     {''.join(ticks)}
     {''.join(events)}
     {''.join(lanes)}
     <line id="cursor" x1="{left:.2f}" y1="{top:.2f}" x2="{left:.2f}" y2="{top + plot_height:.2f}"
-          stroke="#ffd166" stroke-width="1.7" vector-effect="non-scaling-stroke"/>
+          stroke="#d6932f" stroke-width="1.7" vector-effect="non-scaling-stroke"/>
   </svg>
   {''.join(labels)}
   <div class="axis-title">Time (s)</div>

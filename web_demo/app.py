@@ -236,6 +236,23 @@ def _inject_console_css() -> None:
         .st-key-eeg:has(.condition-banner) [data-testid="stElementContainer"]:has(iframe) {
             height:calc(100dvh - 248px); min-height:364px;
         }
+        /* Light mint console: a calm workspace with the same information hierarchy. */
+        :root { --bg:#f4fbf7; --panel:#fff; --panel2:#edf8f2; --border:#c7e0d4; --text:#183d36; --muted:#5f7d74; --cyan:#187c70; --green:#258761; --amber:#b87924; --red:#b84b5b; }
+        [data-testid="stAppViewContainer"] { background:linear-gradient(180deg,#f4fbf7 0%,#edf7f2 100%); color:var(--text); }
+        div[data-testid="stVerticalBlockBorderWrapper"] { background:rgba(255,255,255,.94); border-color:var(--border); box-shadow:0 5px 18px rgba(34,93,75,.05); }
+        .compact-source { border-color:#d6e9df; color:#5f7d74; }.compact-source b,.source-grid b,.device-name { color:#183d36; }
+        .console-title { color:#17493e; }.mode-badge { border-color:#a6d7c6; background:#e4f5ed; color:#237a65; }.section-label,.monitor-title { color:#397566; }
+        .state-pill { border-color:#bddbd0; background:#edf7f2; color:#4d7469; }.state-running,.validation-pass { color:#237a65; border-color:#91ccb7; background:#e2f4eb; }.state-paused { color:#946b21; border-color:#e5c681; background:#fff7df; }.state-disconnected { color:#aa4053; border-color:#e5b1bd; background:#fff0f2; }
+        .condition-banner { border-color:#c9b9d9; background:#f6f1fb; color:#70558d; }.event-banner { border-color:#e4c378; background:#fff7df; color:#8d681f; }
+        .position-strip { color:#397566; }.position-track { background:#d8ece3; }.position-fill { background:#43a88d; }
+        .dac-chip { border-color:#c7e0d4; background:#f7fcf9; }.dac-chip b { color:#187c70; }.dac-chip span { color:#365e54; }.dac-chip code { color:#66857c; }
+        .log-box { background:#f5fbf8; border-color:#c7e0d4; color:#426c60; }.empty-log,.boundary-note,[data-testid="stCaptionContainer"] { color:#708f85; }
+        .chain-card { border-color:#c7e0d4; background:#fff; }.chain-card b,.validation-card b { color:#183d36; }.chain-status,.chain-card p,.validation-card span { color:#58776e; }.chain-step { border-color:#91bfb0; color:#226e5c; }.chain-card:not(:last-child)::after { color:#5e9888; }
+        .implemented { border-color:#9bcfbb; background:#e8f6ee; }.partial { border-color:#e5c681; background:#fff8e6; }.future { border-color:#d6c6df; background:#f8f3fa; }.external { border-color:#aacfd2; background:#edf8f8; }
+        .validation-card { border-color:#c7e0d4; background:#f8fcfa; }.stButton > button { border-color:#a8d3c4!important; background:#eff8f3!important; color:#225e50!important; }.stButton > button:hover { border-color:#4b9b84!important; background:#e0f3e9!important; color:#17493e!important; }
+        .stButton > button:disabled { border-color:#d5e7df!important; background:#f5faf7!important; color:#91aaa1!important; opacity:1!important; }
+        div[data-baseweb="select"] > div, div[data-baseweb="select"] [role="combobox"] { background:#f7fcf9!important; border-color:#b9daca!important; color:#285f53!important; }
+        div[data-baseweb="select"] [role="combobox"] * { color:#285f53!important; }
         @media (max-width: 1050px) {
             .console-title { font-size:1.5rem; }
         }
